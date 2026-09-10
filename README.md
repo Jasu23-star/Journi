@@ -1,3 +1,2 @@
 # Journi
 CodeNection 2026
-THIS IS SO STRESS IDK WHAT I AM DOINGGg
