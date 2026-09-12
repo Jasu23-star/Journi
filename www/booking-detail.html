@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journi | My Trip</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="booking-detail-page">
+  <header class="navbar booking-detail-nav">
+    <a href="index.html#home" class="brand"><span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span></a>
+    <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
+      <a href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a class="active" href="my-plan.html">My Plan</a>
+    </nav>
+  </header>
+
+  <main id="bookingDetailRoot"></main>
+
+  <div class="edit-modal" id="bookingEditModal" aria-hidden="true">
+    <div class="edit-modal-card">
+      <button class="edit-close" onclick="closeBookingEdit()">×</button>
+      <span class="eyebrow dark">EDIT ITINERARY</span>
+      <h2>Edit this activity</h2>
+      <label>Activity / Location<input id="editBookingTitle"></label>
+      <label>Details<textarea id="editBookingDescription" rows="5"></textarea></label>
+      <div class="edit-box-actions"><button class="back-btn" onclick="closeBookingEdit()">Cancel</button><button class="gold-btn" onclick="saveBookingEdit()">Save Changes</button></div>
+    </div>
+  </div>
+  <div class="booking-toast" id="bookingDetailToast"></div>
+
+<script>
+let booking=null; let editing=null;
+function getBooking(){
+  const id=new URLSearchParams(location.search).get('id');
+  const all=JSON.parse(localStorage.getItem('journiBookings')||'[]');
+  return all.find(b=>b.id===id) || all[all.length-1] || null;
+}
+function dateObj(value){return new Date(value+'T00:00:00');}
+function localDateString(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function formatLong(value){return dateObj(value).toLocaleDateString(undefined,{month:'2-digit',day:'2-digit',weekday:'short'});}
+function formatRange(start,end){
+  if(!start||!end) return '5 Days / 4 Nights';
+  return `${dateObj(start).toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${dateObj(end).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}`;
+}
+function iconFor(text){
+  const t=text.toLowerCase();
+  if(t.includes('breakfast')||t.includes('dinner')||t.includes('lunch')) return '🍽';
+  if(t.includes('airport')||t.includes('transfer')||t.includes('departure')||t.includes('arrive')) return '✈';
+  if(t.includes('hotel')||t.includes('check')) return '⌂';
+  if(t.includes('temple')||t.includes('shrine')) return '⛩';
+  if(t.includes('beach')||t.includes('cruise')||t.includes('sea')||t.includes('swim')) return '🌊';
+  if(t.includes('shopping')||t.includes('market')) return '🛍';
+  return '📍';
+}
+function render(){
+  const root=document.getElementById('bookingDetailRoot');
+  if(!booking){root.innerHTML=`<section class="no-build-plan-page"><h1>No trip found</h1><p>Build a trip first and it will appear in My Plan.</p><a class="gold-btn" href="index.html#destinations">Explore Destinations →</a></section>`;return;}
+  document.title=`Journi | ${booking.destination} · My Trip`;
+  const dates=[]; const start=booking.startDate ? dateObj(booking.startDate) : null;
+  const dayCount=booking.type==='DIY' && Array.isArray(booking.days) ? booking.days.length : 5;
+  for(let i=0;i<dayCount;i++){let d=start?new Date(start.getTime()):null;if(d){d.setDate(d.getDate()+i);dates.push(localDateString(d));}else dates.push('');}
+  // Ready-made Journi plans are fixed at 5 Days / 4 Nights. DIY plans use the user's selected duration.
+  if(booking.startDate && booking.type!=='DIY'){ booking.endDate=dates[4]; }
+  root.innerHTML=`
+  <section class="my-trip-hero">
+    <div class="my-trip-hero-shade"></div>
+    <img src="${booking.image||'images/home-river.png'}" alt="${booking.destination}">
+    <div class="my-trip-hero-content">
+      <a href="my-plan.html" class="booking-back">← My Plan</a>
+      <span class="booking-status large">✓ PLAN READY</span>
+      <h1>${dayCount} Days in ${booking.destination}</h1>
+      <p>${booking.country||''} · ${formatRange(booking.startDate,booking.endDate)} · ${booking.travelers||2} ${(booking.travelers||2)===1?'Traveler':'Travelers'}${booking.budget ? ' · 💰 '+booking.budget : ''}</p>
+    </div>
+  </section>
+  <section class="my-trip-main">
+    <div class="my-trip-header">
+      <div><p class="eyebrow dark">MY TRIP</p><h2>${booking.destination}</h2><p>Your saved ${dayCount} day itinerary. Every activity is still editable, so you can keep refining your plan.</p></div>
+      <div class="my-trip-summary"><strong>${dayCount} Days${dayCount===5?' / 4 Nights':''}</strong><span>📅 ${formatRange(booking.startDate,booking.endDate)}</span><span>👤 ${booking.travelers||2} ${(booking.travelers||2)===1?'Traveler':'Travelers'}</span>${booking.budget ? `<span>💰 ${booking.budget}</span>` : ''}</div>
+    </div>
+    <div class="trip-date-tabs" id="tripDateTabs">
+      ${dates.map((d,i)=>`<button class="trip-date-tab ${i===0?'active':''}" onclick="goToDay(${i})"><strong>${d?formatLong(d):'Day '+(i+1)}</strong><span>Day ${i+1}</span></button>`).join('')}
+    </div>
+    <div class="my-trip-days">
+      ${booking.days.map((day,di)=>`<section class="my-trip-day" id="trip-day-${di}">
+        <div class="my-trip-day-heading"><div class="day-circle">${di+1}</div><div><span>DAY ${di+1} ${dates[di]?`· ${formatLong(dates[di])}`:''}</span><h3>${day.title}</h3></div></div>
+        <div class="my-trip-events">
+          ${day.events.map((e,ei)=>`<article class="my-trip-event" id="trip-event-${di}-${ei}"><div class="trip-event-icon">${e[1]||iconFor(e[2])}</div><div class="trip-event-main"><div class="trip-event-top"><time>${e[0]}</time><button onclick="openBookingEdit(${di},${ei})">✎ Edit</button></div><h4>${e[2]}</h4><p>${e[3]}</p></div></article>`).join('')}
+        </div>
+      </section>`).join('')}
+    </div>
+  </section>`;
+}
+function goToDay(index){
+  document.querySelectorAll('.trip-date-tab').forEach((b,i)=>b.classList.toggle('active',i===index));
+  const el=document.getElementById('trip-day-'+index); if(el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function openBookingEdit(di,ei){
+  editing={di,ei}; const e=booking.days[di].events[ei];
+  document.getElementById('editBookingTitle').value=e[2]; document.getElementById('editBookingDescription').value=e[3];
+  const m=document.getElementById('bookingEditModal');m.classList.add('show');m.setAttribute('aria-hidden','false');document.getElementById('editBookingTitle').focus();
+}
+function closeBookingEdit(){const m=document.getElementById('bookingEditModal');m.classList.remove('show');m.setAttribute('aria-hidden','true');editing=null;}
+function saveBookingEdit(){
+  if(!editing)return; const title=document.getElementById('editBookingTitle').value.trim(); const desc=document.getElementById('editBookingDescription').value.trim(); if(!title)return;
+  booking.days[editing.di].events[editing.ei][2]=title; booking.days[editing.di].events[editing.ei][3]=desc||'Updated activity detail.'; booking.days[editing.di].events[editing.ei][1]=iconFor(title);
+  const all=JSON.parse(localStorage.getItem('journiBookings')||'[]'); const idx=all.findIndex(b=>b.id===booking.id); if(idx>-1){all[idx]=booking;localStorage.setItem('journiBookings',JSON.stringify(all));}
+  closeBookingEdit(); render(); setTimeout(()=>{const el=document.getElementById('trip-day-'+editing?.di);},0); showToast('Itinerary updated ✓');
+}
+function showToast(msg){const t=document.getElementById('bookingDetailToast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+booking=getBooking();render();
+</script>
+
+<script>
+  // Keep bookings created by an older version when upgrading to Journi.
+  if (!localStorage.getItem('journiBookings') && localStorage.getItem('catalystsBookings')) {
+    localStorage.setItem('journiBookings', localStorage.getItem('catalystsBookings'));
+  }
+</script>
+<button class="back-to-top" type="button" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ <span>Top</span></button>
+</body>
+</html>
