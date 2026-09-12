@@ -11,18 +11,18 @@
   <!-- NAVIGATION -->
   <header class="navbar" id="home">
     <a href="#home" class="brand">
-      <img src="images/logo.png" alt="Journi logo" class="brand-logo-img">
+      <span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span>
     </a>
 
     <nav class="nav-links">
-      <a href="#home">Home</a>
-      <a href="#destinations">Destinations</a>
-      <a href="ai-planner.html">AI Planner</a>
+      <a class="active" href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
       <a href="route-builder.html">Route Builder</a>
-    <a href="group-planning.html">Plan With Friends</a>
-      <a href="#reviews">Reviews</a>
-      <a href="#plan-cta">Plan a Trip</a>
-      <a href="#bookings" onclick="showBookings(event)">My Bookings</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a href="my-plan.html">My Plan</a>
     </nav>
   </header>
 
@@ -41,7 +41,7 @@
         <div class="hero-search">
           <span class="search-icon">⌕</span>
           <input id="heroDestination" type="text" placeholder="Search destinations, experiences, or activities...">
-          <button class="gold-btn" onclick="startFromHero()">Plan Trip →</button>
+          <a class="gold-btn" href="ai-planner.html" id="heroPlanTrip">Plan Trip →</a>
         </div>
 
         <div class="trending">
@@ -86,7 +86,7 @@
         </article>
 
         <article class="destination-card" onclick="openDestination('kyoto', this)">
-          <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85" alt="Kyoto, Japan">
+          <img src="images/kyoto.png" alt="Kyoto, Japan">
           <div class="destination-shade"></div>
           <div class="destination-content">
             <span>JAPAN</span>
@@ -120,7 +120,7 @@
       <div class="feature-grid">
         <article class="feature-card">
           <div class="feature-icon">✈</div>
-          <h3>Book Flights</h3>
+          <h3>Plan Flights</h3>
           <p>Compare available flight options and choose the one that works best for your trip.</p>
         </article>
         <article class="feature-card">
@@ -147,7 +147,7 @@
         <div class="section-head reviews-title">
           <p class="eyebrow">REAL STORIES</p>
           <h2>Travel Stories <em>&amp; Reviews</em></h2>
-          <p>Explore real customer trips, their 5-day itineraries, and plans you can book and personalise.</p>
+          <p>Explore real customer trips, their 5-day itineraries, and plans you can build and personalise.</p>
         </div>
 
         <div class="reviews-carousel" id="reviewsCarousel">
@@ -158,7 +158,7 @@
               <div class="review-top">
                 <div class="avatar">CL</div>
                 <div><h3>Camille Laurent</h3><p>Santorini, Greece</p></div>
-                <div class="stars">★★★★★<small>August · 5 days / 4 nights</small></div>
+                <div class="stars">★★★★★<small>August · 5 days / 4 nights</small><b class="review-budget-range">EST. TRIP BUDGET · $3,000 – $4,200</b></div>
               </div>
               <blockquote>“Journi made our honeymoon absolutely seamless. When our flight changed, we could move the affected activities without rebuilding the entire trip.”</blockquote>
               <img src="images/santorini.png" alt="Camille's Santorini travel story">
@@ -168,7 +168,7 @@
               <div class="review-top">
                 <div class="avatar">JL</div>
                 <div><h3>Jason Lim</h3><p>Singapore</p></div>
-                <div class="stars">★★★★★<small>June · 5 days / 4 nights</small></div>
+                <div class="stars">★★★★★<small>June · 5 days / 4 nights</small><b class="review-budget-range">EST. TRIP BUDGET · $2,800 – $3,600</b></div>
               </div>
               <blockquote>“I loved having flights, budget and activities in one place. The itinerary gave us enough structure while still leaving room to explore.”</blockquote>
               <img src="images/singapore.png" alt="Jason's Singapore travel story">
@@ -178,17 +178,17 @@
               <div class="review-top">
                 <div class="avatar">AM</div>
                 <div><h3>Aiko Mori</h3><p>Kyoto, Japan</p></div>
-                <div class="stars">★★★★★<small>November · 5 days / 4 nights</small></div>
+                <div class="stars">★★★★★<small>November · 5 days / 4 nights</small><b class="review-budget-range">EST. TRIP BUDGET · $2,600 – $3,600</b></div>
               </div>
-              <blockquote>“The ready-made Kyoto plan saved me hours of research. I changed two temples before booking and the final schedule felt completely like my own trip.”</blockquote>
-              <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85" alt="Aiko's Kyoto travel story">
+              <blockquote>“The ready-made Kyoto plan saved me hours of research. I changed two temples before building and the final schedule felt completely like my own trip.”</blockquote>
+              <img src="images/kyoto.png" alt="Aiko's Kyoto travel story">
             </article>
 
             <article class="review-card review-slide" data-index="3">
               <div class="review-top">
                 <div class="avatar">RS</div>
                 <div><h3>Rafael Santos</h3><p>Bali, Indonesia</p></div>
-                <div class="stars">★★★★★<small>September · 5 days / 4 nights</small></div>
+                <div class="stars">★★★★★<small>September · 5 days / 4 nights</small><b class="review-budget-range">EST. TRIP BUDGET · $2,200 – $3,200</b></div>
               </div>
               <blockquote>“Journi made our Bali trip flexible. We replaced one outdoor activity with a spa day and the itinerary stayed organised from morning to night.”</blockquote>
               <img src="images/bali.png" alt="Rafael's Bali travel story">
@@ -201,7 +201,7 @@
               <span class="five-night-badge">5D / 4N</span>
             </div>
             <div id="reviewMiniItinerary"></div>
-            <a class="review-plan-btn" id="reviewPlanButton" href="review-plan.html?customer=camille">View Full Plan &amp; Book →</a>
+            <a class="review-plan-btn" id="reviewPlanButton" href="review-plan.html?customer=camille">View Full Plan &amp; Build →</a>
           </aside>
 
           <button class="review-arrow review-arrow-right" onclick="changeReview(1)" aria-label="Next customer">›</button>
@@ -216,13 +216,14 @@
       </div>
     </section>
 
-    <!-- MY BOOKINGS -->
+    <!-- MY PLAN -->
     <section class="bookings-placeholder" id="bookings">
       <div class="bookings-inner">
         <p class="eyebrow">YOUR TRIPS</p>
-        <h2>My Bookings</h2>
-        <div id="bookingsList"></div>
-        <button class="dark-btn" onclick="openPlanner()">Start a New Trip →</button>
+        <h2>My Plan</h2>
+        <p>Plans you have built will appear here. Open any trip to view and edit its full 5-day itinerary.</p>
+        <div id="bookingsList" class="bookings-list"></div>
+        <a class="dark-btn" href="ai-planner.html">Build a New Plan →</a>
       </div>
     </section>
 
@@ -230,7 +231,7 @@
     <section class="final-cta" id="plan-cta">
       <p class="eyebrow">READY TO GO?</p>
       <h2>Your next journey starts with a plan.</h2>
-      <button class="gold-btn big" onclick="openPlanner()">Create Your Travel Plan →</button>
+      <a class="gold-btn big" href="ai-planner.html">Create Your Travel Plan →</a>
     </section>
   </main>
 
@@ -339,67 +340,76 @@
     let selectedFlightPrice = 890;
     let selectedFlightName = 'Singapore Airlines';
 
-    function loadBookings() {
-      try {
-        return JSON.parse(localStorage.getItem('journiBookings')) || [];
-      } catch (e) {
-        return [];
-      }
+    function showBookings(event) {
+      event.preventDefault();
+      renderBookings();
+      const section = document.getElementById('bookings');
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    function saveBookings(bookings) {
-      localStorage.setItem('journiBookings', JSON.stringify(bookings));
+    function localDateString(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function getBookings() {
+      try {
+        const bookings = JSON.parse(localStorage.getItem('journiBookings') || '[]');
+        return bookings.map(b => {
+          if (b.startDate) {
+            const d = new Date(b.startDate + 'T00:00:00');
+            d.setDate(d.getDate() + 4);
+            b.endDate = localDateString(d);
+          }
+          return b;
+        });
+      } catch(e) { return []; }
+    }
+
+    function cancelBooking(encodedId) {
+      const id = decodeURIComponent(encodedId);
+      const booking = getBookings().find(b => b.id === id);
+      if (!booking) return;
+      if (!confirm(`Remove your ${booking.destination} plan?`)) return;
+      const remaining = getBookings().filter(b => b.id !== id);
+      localStorage.setItem('journiBookings', JSON.stringify(remaining));
+      renderBookings();
+      showToast('Plan removed.');
     }
 
     function renderBookings() {
-      const bookings = loadBookings();
       const list = document.getElementById('bookingsList');
+      if (!list) return;
+      const bookings = getBookings();
       if (!bookings.length) {
-        list.innerHTML = '<p class="bookings-empty">Your saved and confirmed travel plans will appear here.</p>';
+        list.innerHTML = `<div class="empty-bookings"><div class="empty-booking-icon">✦</div><strong>No plans yet</strong><span>Choose a ready-made itinerary or create your own trip to see it here.</span></div>`;
         return;
       }
-      list.innerHTML = '<div class="booking-card-grid">' + bookings.map((b, i) => `
-        <div class="booking-card">
-          <h3>${b.destination}</h3>
-          <div class="booking-meta">
-            <span>${b.departureDate} → ${b.returnDate}</span>
-            <span>${b.travelers} · ${b.flightName}</span>
-            <span>Budget: $${b.budgetTotal.toLocaleString()}</span>
-          </div>
-          <div class="booking-card-actions">
-            <button class="booking-view-btn" onclick="viewBooking(${i})">View / Edit</button>
-            <button class="booking-remove-btn" onclick="removeBooking(${i})">Remove</button>
-          </div>
-        </div>
-      `).join('') + '</div>';
+      list.innerHTML = bookings.slice().reverse().map(b => {
+        const end = b.endDate || '';
+        const start = b.startDate || '';
+        const dateText = start && end ? `${formatBookingDate(start)} – ${formatBookingDate(end)}` : 'Dates not added';
+        return `<div class="booking-card">
+          <a class="booking-card-main" href="booking-detail.html?id=${encodeURIComponent(b.id)}">
+            <div class="booking-card-photo"><img src="${b.image || 'images/home-river.png'}" alt="${b.destination}"></div>
+            <div class="booking-card-content">
+              <div class="booking-status">✓ PLAN READY</div>
+              <h3>${b.type === 'DIY' ? ((b.days?.length || 1) + ' Days in ' + b.destination) : ('5 Days in ' + b.destination)}</h3>
+              <div class="booking-meta"><span>📅 ${dateText}</span><span>👤 ${b.travelers || 2} ${(b.travelers || 2) === 1 ? 'Traveler' : 'Travelers'}</span><span>💰 ${b.budget || 'Budget not set'}</span></div>
+              <p>${b.country || ''} · ${b.type === 'DIY' ? ((b.days?.length || 1) + ' Days') : '5 Days / 4 Nights'}</p>
+              <span class="booking-open">Open Plan →</span>
+            </div>
+          </a>
+          <button class="cancel-booking-btn" type="button" onclick="cancelBooking('${encodeURIComponent(b.id)}')">Remove Plan</button>
+        </div>`;
+      }).join('');
     }
 
-    function viewBooking(index) {
-      const b = loadBookings()[index];
-      if (!b) return;
-      setDestination(b.destination);
-      const count = parseInt(b.travelers, 10);
-      if (!isNaN(count)) {
-        travelers = Math.max(1, Math.min(10, count));
-        document.getElementById('travelerCount').textContent = travelers + (travelers === 1 ? ' Traveler' : ' Travelers');
-      }
-      document.getElementById('departureDate').value = b.departureDate;
-      document.getElementById('returnDate').value = b.returnDate;
-      openPlanner();
-    }
-
-    function removeBooking(index) {
-      const bookings = loadBookings();
-      bookings.splice(index, 1);
-      saveBookings(bookings);
-      renderBookings();
-      showToast('Booking removed.');
-    }
-
-    function showBookings(event) {
-      event.preventDefault();
-      const section = document.getElementById('bookings');
-      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    function formatBookingDate(value) {
+      const d = new Date(value + 'T00:00:00');
+      return d.toLocaleDateString(undefined,{month:'2-digit',day:'2-digit'});
     }
 
     function openPlanner() {
@@ -455,7 +465,7 @@
 
     const reviewCustomers = [
       {
-        key: 'camille', name: 'Camille Laurent', destination: 'Santorini', country: 'Greece', image: 'images/santorini.png',
+        key: 'camille', name: 'Camille Laurent', destination: 'Santorini', country: 'Greece', image: 'images/santorini.png', budget:'$3,000 – $4,200',
         days: [
           ['Day 1 · Arrival & Oia', 'Airport transfer', 'Hotel check-in', 'Explore Oia', 'Sunset at Oia'],
           ['Day 2 · Fira & Imerovigli', 'Fira walking tour', 'Caldera viewpoint', 'Local lunch', 'Sunset dinner'],
@@ -465,7 +475,7 @@
         ]
       },
       {
-        key: 'jason', name: 'Jason Lim', destination: 'Singapore', country: 'Singapore', image: 'images/singapore.png',
+        key: 'jason', name: 'Jason Lim', destination: 'Singapore', country: 'Singapore', image: 'images/singapore.png', budget:'$2,800 – $3,600',
         days: [
           ['Day 1 · Arrival & Marina Bay', 'Arrive Changi Airport', 'Hotel check-in', 'Merlion Park', 'Marina Bay dinner'],
           ['Day 2 · Gardens & City', 'Gardens by the Bay', 'Cloud Forest', 'Lunch at hawker centre', 'Marina Bay Sands'],
@@ -475,7 +485,7 @@
         ]
       },
       {
-        key: 'aiko', name: 'Aiko Mori', destination: 'Kyoto', country: 'Japan', image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85',
+        key: 'aiko', name: 'Aiko Mori', destination: 'Kyoto', country: 'Japan', image: 'images/kyoto.png', budget:'$2,600 – $3,600',
         days: [
           ['Day 1 · Arrival & Gion', 'Arrive Kyoto', 'Hotel check-in', 'Gion walk', 'Traditional dinner'],
           ['Day 2 · Fushimi Inari & Higashiyama', 'Fushimi Inari Shrine', 'Kiyomizu-dera', 'Sannenzaka', 'Gion evening'],
@@ -485,7 +495,7 @@
         ]
       },
       {
-        key: 'rafael', name: 'Rafael Santos', destination: 'Bali', country: 'Indonesia', image: 'images/bali.png',
+        key: 'rafael', name: 'Rafael Santos', destination: 'Bali', country: 'Indonesia', image: 'images/bali.png', budget:'$2,200 – $3,200',
         days: [
           ['Day 1 · Arrival & Seminyak', 'Airport transfer', 'Hotel check-in', 'Seminyak beach walk', 'Sunset dinner'],
           ['Day 2 · Ubud & Rice Terraces', 'Ubud', 'Tegallalang rice terraces', 'Ubud market', 'Spa evening'],
@@ -526,6 +536,7 @@
       document.querySelectorAll('.review-slide').forEach((slide, i) => slide.classList.toggle('active-review', i === currentReview));
       document.querySelectorAll('.review-dot').forEach((dot, i) => dot.classList.toggle('active', i === currentReview));
       renderReviewItinerary();
+    renderBookings();
     }
 
     function changeReview(direction) {
@@ -533,14 +544,13 @@
     }
 
     function quickDestination(destination) {
-      setDestination(destination);
-      openPlanner();
+      window.location.href = 'ai-planner.html?destination=' + encodeURIComponent(destination);
     }
 
     function startFromHero() {
       const value = document.getElementById('heroDestination').value.trim();
-      if (value) setDestination(value);
-      openPlanner();
+      const target = value ? 'ai-planner.html?q=' + encodeURIComponent(value) : 'ai-planner.html';
+      window.location.href = target;
     }
 
     function setDestination(destination) {
@@ -621,17 +631,6 @@
     }
 
     function finishPlan() {
-      const bookings = loadBookings();
-      bookings.push({
-        destination: document.getElementById('destinationInput').value.trim() || 'Trip',
-        travelers: document.getElementById('travelerCount').textContent,
-        departureDate: document.getElementById('departureDate').value,
-        returnDate: document.getElementById('returnDate').value,
-        flightName: selectedFlightName,
-        budgetTotal: +document.getElementById('budgetTotal').textContent.replace(/[^0-9]/g, '')
-      });
-      saveBookings(bookings);
-      renderBookings();
       showToast('Your Journi travel plan has been saved!');
       setTimeout(closePlanner, 1000);
     }
@@ -648,13 +647,18 @@
     if (initialDestination) {
       setDestination(initialDestination);
       setTimeout(openPlanner, 120);
-    } else if (window.location.hash === '#planner') {
-      setTimeout(openPlanner, 120);
     }
 
     updateBudget();
     renderReviewItinerary();
-    renderBookings();
   </script>
+
+<script>
+  // Keep bookings created by an older version when upgrading to Journi.
+  if (!localStorage.getItem('journiBookings') && localStorage.getItem('catalystsBookings')) {
+    localStorage.setItem('journiBookings', localStorage.getItem('catalystsBookings'));
+  }
+</script>
+<button class="back-to-top" type="button" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ <span>Top</span></button>
 </body>
 </html>
