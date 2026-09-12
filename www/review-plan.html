@@ -9,16 +9,17 @@
 <body class="customer-plan-page">
 
 <header class="navbar">
-  <a href="index.html#home" class="brand"><img src="images/logo.png" alt="Journi logo" class="brand-logo-img"></a>
+  <a href="index.html#home" class="brand"><span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span></a>
   <nav class="nav-links">
-    <a href="index.html#home">Home</a>
-    <a href="index.html#destinations">Destinations</a>
-    <a href="index.html#planner">Plan a Trip</a>
-    <a href="ai-planner.html">AI Planner</a>
-    <a href="route-builder.html">Route Builder</a>
-    <a href="group-planning.html">Plan With Friends</a>
-    <a href="index.html#reviews" class="active">Reviews</a>
-  </nav>
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
+      <a href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a class="active" href="index.html#reviews">Reviews</a>
+      <a href="my-plan.html">My Plan</a>
+    </nav>
 </header>
 
 <main id="customerPlanContent"></main>
@@ -41,7 +42,7 @@
 <div class="toast" id="toast"></div>
 
 <footer>
-  <div class="footer-logo"><div class="logo-icon">✦</div><span>Journi</span></div>
+  <div class="footer-logo"><img class="footer-logo-img" src="images/journi-logo.png" alt="Journi logo"><span>Journi</span></div>
   <p>Plan Freely. Travel Confidently.</p>
   <span>© 2026 Journi Travel Planning</span>
 </footer>
@@ -49,8 +50,8 @@
 <script>
 const customerPlans = {
   camille: {
-    name:'Camille Laurent', destination:'Santorini', country:'Greece', image:'images/santorini.png', rating:'★★★★★', period:'August',
-    intro:'Camille and her partner used this romantic 5-day plan for their Santorini honeymoon. You can book the same structure and edit any activity before confirming.',
+    name:'Camille Laurent', destination:'Santorini', country:'Greece', image:'images/santorini.png', rating:'★★★★★', period:'August', budget:'$3,000 – $4,200',
+    intro:'Camille and her partner used this romantic 5-day plan for their Santorini honeymoon. You can build from the same structure and edit any activity before confirming.',
     days:[
       {title:'Arrival & Oia', events:[['9:00 AM','✈','Airport transfer','Private transfer from Santorini Airport to the hotel.'],['11:00 AM','⌂','Hotel check-in','Check in, settle down and refresh.'],['3:00 PM','📍','Explore Oia','Walk through the whitewashed streets and viewpoints.'],['7:00 PM','🌅','Sunset at Oia','Watch the sunset from a caldera viewpoint.'],['8:30 PM','🍽','Dinner in Oia','Relaxed dinner with a caldera view.']]},
       {title:'Fira & Imerovigli', events:[['8:00 AM','🍽','Breakfast','Breakfast at the hotel.'],['9:30 AM','📍','Fira walking tour','Explore Fira shops, cafés and viewpoints.'],['12:30 PM','🍽','Caldera-view lunch','Local Greek lunch overlooking the Aegean Sea.'],['3:00 PM','📍','Imerovigli','Walk the cliffside paths and explore the village.'],['7:00 PM','🍽','Sunset dinner','Dinner in Fira with a relaxed evening.']]},
@@ -60,8 +61,8 @@ const customerPlans = {
     ]
   },
   jason: {
-    name:'Jason Lim', destination:'Singapore', country:'Singapore', image:'images/singapore.png', rating:'★★★★★', period:'June',
-    intro:'Jason planned a balanced Singapore city trip with food, culture and attractions. The same plan can be booked and personalised before confirmation.',
+    name:'Jason Lim', destination:'Singapore', country:'Singapore', image:'images/singapore.png', rating:'★★★★★', period:'June', budget:'$2,800 – $3,600',
+    intro:'Jason planned a balanced Singapore city trip with food, culture and attractions. The same plan can be built and personalised before confirmation.',
     days:[
       {title:'Arrival & Marina Bay', events:[['9:00 AM','✈','Arrive Changi Airport','Airport arrival and transfer to the city.'],['11:00 AM','⌂','Hotel check-in','Drop luggage and refresh.'],['2:00 PM','📍','Merlion Park','See the Merlion and Marina Bay skyline.'],['5:30 PM','📍','Marina Bay walk','Walk around the waterfront.'],['7:30 PM','🍽','Marina Bay dinner','Dinner near the bay.']]},
       {title:'Gardens & City Icons', events:[['8:00 AM','🍽','Breakfast','Breakfast at the hotel.'],['9:30 AM','🌿','Gardens by the Bay','Explore the Supertrees and gardens.'],['12:30 PM','🍽','Hawker centre lunch','Try local Singaporean dishes.'],['3:00 PM','📍','Marina Bay Sands','Explore the landmark and surrounding area.'],['7:00 PM','🌃','Night city walk','Enjoy the evening skyline.']]},
@@ -71,7 +72,7 @@ const customerPlans = {
     ]
   },
   aiko: {
-    name:'Aiko Mori', destination:'Kyoto', country:'Japan', image:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85', rating:'★★★★★', period:'November',
+    name:'Aiko Mori', destination:'Kyoto', country:'Japan', image:'images/kyoto.png', rating:'★★★★★', period:'November', budget:'$2,600 – $3,600',
     intro:'Aiko used this cultural Kyoto plan to combine famous temples, traditional streets, food and a slower final day.',
     days:[
       {title:'Arrival & Gion', events:[['9:00 AM','✈','Arrive Kyoto','Transfer from the station to the hotel.'],['11:00 AM','⌂','Hotel check-in','Drop luggage and settle in.'],['3:00 PM','📍','Gion walk','Explore traditional streets and wooden machiya houses.'],['6:00 PM','📍','Hanamikoji Street','Evening stroll through historic Kyoto.'],['7:30 PM','🍽','Traditional dinner','Japanese dinner in Gion.']]},
@@ -82,7 +83,7 @@ const customerPlans = {
     ]
   },
   rafael: {
-    name:'Rafael Santos', destination:'Bali', country:'Indonesia', image:'images/bali.png', rating:'★★★★★', period:'September',
+    name:'Rafael Santos', destination:'Bali', country:'Indonesia', image:'images/bali.png', rating:'★★★★★', period:'September', budget:'$2,200 – $3,200',
     intro:'Rafael’s Bali plan balances Ubud nature, culture, beaches and wellness, with flexible outdoor activities.',
     days:[
       {title:'Arrival & Seminyak', events:[['9:00 AM','✈','Arrive Bali','Airport arrival and hotel transfer.'],['12:00 PM','⌂','Hotel check-in','Check in and relax.'],['3:00 PM','🌊','Seminyak beach','Beach walk and café stop.'],['6:00 PM','🌅','Sunset','Watch the sunset by the coast.'],['7:30 PM','🍽','Sunset dinner','Dinner in Seminyak.']]},
@@ -118,7 +119,7 @@ function renderPlan() {
           <p class="eyebrow">${d.name.toUpperCase()} · CUSTOMER PLAN</p>
           <h1>${d.destination}, <em>${d.country}</em></h1>
           <p>${d.intro}</p>
-          <div class="customer-plan-meta"><span>📅 5 Days / 4 Nights</span><span>⭐ ${d.rating}</span><span>👤 ${d.name}</span></div>
+          <div class="customer-plan-meta"><span>📅 5 Days / 4 Nights</span><span>⭐ ${d.rating}</span><span>👤 ${d.name}</span><span>💰 Est. trip budget ${d.budget}</span></div>
         </div>
         <img class="customer-plan-image" src="${d.image}" alt="${d.destination}">
       </div>
@@ -126,11 +127,11 @@ function renderPlan() {
     <section class="customer-plan-main">
       <div class="customer-plan-head">
         <div>
-          <p class="eyebrow dark">BOOK THIS CUSTOMER PLAN</p>
+          <p class="eyebrow dark">BUILD THIS CUSTOMER PLAN</p>
           <h2>${d.destination} · 5 Days / 4 Nights</h2>
           <p>Edit anything you want before confirming. Remove an attraction, replace a restaurant, change a time, or add your own activity.</p>
         </div>
-        <div class="edit-mode-note">✎ <strong>Editable itinerary</strong><br>Nothing is booked until you confirm.</div>
+        <div class="edit-mode-note">✎ <strong>Editable itinerary</strong><br>Nothing is built until you confirm.<br><b>Estimated trip budget: ${d.budget}</b></div>
       </div>
       <div class="trip-details-card review-trip-details">
         <div>
@@ -168,8 +169,8 @@ function renderPlan() {
         </article>`).join('')}
       </div>
       <div class="book-panel">
-        <div><strong>Ready to make this trip yours?</strong><p>Your edits are applied to this plan before booking.</p></div>
-        <button class="confirm-book-btn" onclick="confirmBooking()">Confirm & Book This Plan →</button>
+        <div><strong>Ready to make this trip yours?</strong><p>Your edits are applied to this plan before building.</p></div>
+        <button class="confirm-book-btn" onclick="confirmBooking()">Build This Plan →</button>
       </div>
     </section>`;
 }
@@ -197,8 +198,25 @@ function saveEdit(){
   e[2]=title; e[3]=desc || 'Custom activity added by you.'; e[1]=iconFor(title);
   closeEdit(); renderPlan(); showToast('Your itinerary was updated.');
 }
+function saveReviewBooking(){
+  const start=document.getElementById('reviewStartDate')?.value || '';
+  const end=document.getElementById('reviewEndDate')?.value || '';
+  const d=customerPlans[activeCustomer] || customerPlans.camille;
+  const booking={
+    id:'booking-'+Date.now(), source:'customer-plan', customer:activeCustomer, customerName:d.name, destination:d.destination, country:d.country, image:d.image,
+    travelers:reviewTravelerCount, startDate:start, endDate:end, duration:'5 Days / 4 Nights', budget:d.budget, days:JSON.parse(JSON.stringify(d.days)), bookedAt:new Date().toISOString()
+  };
+  const existing=JSON.parse(localStorage.getItem('journiBookings')||'[]');
+  existing.push(booking); localStorage.setItem('journiBookings',JSON.stringify(existing));
+  return booking;
+}
 function confirmBooking(){
-  showToast('Plan confirmed! Booking flow would continue here.');
+  const start=document.getElementById('reviewStartDate')?.value || '';
+  if(!start){ showToast('Please select your departure date first.'); return; }
+  updateReviewReturnDate();
+  const booking=saveReviewBooking();
+  showToast('Trip built and added to My Plan ✓');
+  setTimeout(()=>window.location.href='booking-detail.html?id='+encodeURIComponent(booking.id),650);
 }
 function showToast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show-toast');
@@ -210,12 +228,19 @@ function changeReviewTravelers(amount){
   reviewTravelerCount=Math.max(1,Math.min(20,reviewTravelerCount+amount));
   document.getElementById('reviewTravelerCount').textContent=reviewTravelerCount;
 }
+function localDateString(d){
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+
 function updateReviewReturnDate(){
   const start=document.getElementById('reviewStartDate').value;
   const end=document.getElementById('reviewEndDate');
   if(!start){end.value='';return;}
   const d=new Date(start+'T00:00:00'); d.setDate(d.getDate()+4);
-  end.value=d.toISOString().slice(0,10);
+  end.value=localDateString(d);
   document.getElementById('reviewTripFormError').textContent='';
   const summary=document.getElementById('reviewDateSummary');
   if(summary && end.value) summary.textContent=formatDate(start)+' → '+formatDate(end.value);
@@ -238,5 +263,13 @@ function startReviewPlan(){
 activeCustomer=new URLSearchParams(location.search).get('customer') || 'camille';
 renderPlan();
 </script>
+
+<script>
+  // Keep bookings created by an older version when upgrading to Journi.
+  if (!localStorage.getItem('journiBookings') && localStorage.getItem('catalystsBookings')) {
+    localStorage.setItem('journiBookings', localStorage.getItem('catalystsBookings'));
+  }
+</script>
+<button class="back-to-top" type="button" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ <span>Top</span></button>
 </body>
 </html>
