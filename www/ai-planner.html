@@ -4,23 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Journi | AI Trip Planner</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="planner-pages.css">
 </head>
 <body>
 
-<nav class="navbar">
-  <a class="brand" href="index.html#home"><img src="images/logo.png" alt="Journi logo" class="brand-logo-img"></a>
-  <div class="nav-links">
-    <a href="index.html#home">Home</a>
-    <a href="index.html#destinations">Destinations</a>
-    <a href="index.html#planner">Plan a Trip</a>
-    <a class="active" href="ai-planner.html">AI Planner</a>
-    <a href="route-builder.html">Route Builder</a>
-    <a href="group-planning.html">Plan With Friends</a>
-    <a href="ai-planner.html#agents">Travel Agents</a>
-    <a href="index.html#reviews">Reviews</a>
-  </div>
-</nav>
+<header class="navbar">
+  <a class="brand" href="index.html#home"><img src="images/journi-logo.png" alt="Journi logo" class="brand-logo-img"></a>
+  <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a class="active" href="ai-planner.html">Ai Planner</a>
+      <a href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a href="my-plan.html">My Plan</a>
+    </nav>
+</header>
 
 <main>
   <section class="section route-hero">
@@ -51,7 +51,8 @@
       </div>
       <div id="aiDays"></div>
       <div class="ai-results-actions">
-        <button class="gold-btn" onclick="window.location.href='route-builder.html'">Optimize the route →</button>
+        <button class="gold-btn" onclick="buildAiPlan()">Build This Plan →</button>
+        <button class="ghost-btn" onclick="window.location.href='route-builder.html'">Optimize the route →</button>
         <button class="ghost-btn" onclick="resetPlanner()">Start over</button>
       </div>
     </div>
@@ -238,6 +239,47 @@ function renderItinerary(trip, fellBack) {
   results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+function buildAiPlan() {
+  const tripTitle = document.getElementById('aiTripTitle').textContent || 'Your Trip';
+  const parts = tripTitle.split(',');
+  const destination = (parts[0] || 'Your Trip').trim();
+  const country = (parts.slice(1).join(',') || '').trim();
+  const raw = document.getElementById('aiInput').value.trim();
+  const key = detectDestination(raw) || destination.toLowerCase();
+  const catalogTrip = TRIP_CATALOG[key];
+  const spots = catalogTrip ? catalogTrip.spots : [];
+  const days = [];
+  for (let d = 0; d < 3; d++) {
+    const a = spots[d * 2], b = spots[d * 2 + 1];
+    days.push({
+      day: d + 1,
+      title: ['Arrival & First Impressions', 'Deep Dive', 'Local Favorites'][d],
+      activities: [
+        a ? { time: '9:00 AM', name: a.name, desc: a.desc } : null,
+        b ? { time: '2:30 PM', name: b.name, desc: b.desc } : null
+      ].filter(Boolean)
+    });
+  }
+  const booking = {
+    id: 'ai-' + Date.now(),
+    type: 'AI',
+    destination,
+    country,
+    image: catalogTrip ? 'images/' + destination.toLowerCase() + '.png' : 'images/home-river.png',
+    startDate: '',
+    travelers: 2,
+    budget: 'Budget not set',
+    days,
+    createdAt: new Date().toISOString()
+  };
+  let plans = [];
+  try { plans = JSON.parse(localStorage.getItem('journiBookings') || '[]'); if (!Array.isArray(plans)) plans = []; } catch(e) { plans = []; }
+  plans.push(booking);
+  localStorage.setItem('journiBookings', JSON.stringify(plans));
+  showToast('Plan built and added to My Plan ✓');
+  setTimeout(() => { window.location.href = 'index.html#bookings'; }, 700);
+}
+
 function resetPlanner() {
   document.getElementById('aiResults').classList.remove('show', 'reveal');
   document.getElementById('aiInput').value = '';
@@ -365,5 +407,20 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 </script>
+
+<script>
+// Pre-fill the AI prompt when Journi sends a destination/search term from another page.
+(function initFromQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  const destination = params.get('destination');
+  const value = q || (destination ? `Plan a trip to ${destination}` : '');
+  if (value) {
+    const input = document.getElementById('aiInput');
+    if (input) input.value = value;
+  }
+})();
+</script>
+<button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
 </body>
 </html>
