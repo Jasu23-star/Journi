@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journi | My Plan</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="booking-plan-page">
+  <header class="navbar">
+    <a href="index.html#home" class="brand">
+      <span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
+      <a href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a class="active" href="my-plan.html">My Plan</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="bookings-placeholder" id="bookings">
+      <div class="bookings-inner">
+        <p class="eyebrow">YOUR TRAVEL PLANS</p>
+        <h1>My Plan</h1>
+        <p>Plans you have built will appear here. Open any plan to view and edit its itinerary.</p>
+        <div id="bookingsList" class="bookings-list"></div>
+        <a class="dark-btn" href="ai-planner.html">Build a New Plan →</a>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+  <a class="back-to-top" href="#top" aria-label="Back to top">↑</a>
+
+<script>
+function localDateString(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`;}
+function getBookings(){try{return JSON.parse(localStorage.getItem('journiBookings')||'[]').map(b=>{if(b.startDate){const d=new Date(b.startDate+'T00:00:00');d.setDate(d.getDate()+4);b.endDate=localDateString(d);}return b;});}catch(e){return [];}}
+function cancelBooking(encodedId){const id=decodeURIComponent(encodedId),booking=getBookings().find(b=>b.id===id);if(!booking)return;if(!confirm(`Remove your ${booking.destination} plan?`))return;const remaining=getBookings().filter(b=>b.id!==id);localStorage.setItem('journiBookings',JSON.stringify(remaining));renderBookings();showToast('Plan removed.');}
+function renderBookings(){const list=document.getElementById('bookingsList');if(!list)return;const plans=getBookings();if(!plans.length){list.innerHTML='<div class="empty-bookings"><div class="empty-booking-icon">✦</div><strong>No plans yet</strong><span>Choose a ready-made itinerary or create your own plan to see it here.</span></div>';return;}list.innerHTML=plans.slice().reverse().map(b=>{const end=b.endDate||'',start=b.startDate||'',dateText=start&&end?`${formatBookingDate(start)} – ${formatBookingDate(end)}`:'Dates not added';return `<div class="booking-card"><a class="booking-card-main" href="booking-detail.html?id=${encodeURIComponent(b.id)}"><div class="booking-card-photo"><img src="${b.image||'images/home-river.png'}" alt="${b.destination}"></div><div class="booking-card-content"><div class="booking-status">✓ PLAN READY</div><h3>${b.type==='DIY'?((b.days?.length||1)+' Days in '+b.destination):('5 Days in '+b.destination)}</h3><div class="booking-meta"><span>📅 ${dateText}</span><span>👤 ${b.travelers||2} ${(b.travelers||2)===1?'Traveler':'Travelers'}</span><span>💰 ${b.budget||'Budget not set'}</span></div><p>${b.country||''} · ${b.type==='DIY'?((b.days?.length||1)+' Days'):'5 Days / 4 Nights'}</p><span class="booking-open">Open Plan →</span></div></a><button class="cancel-booking-btn" type="button" onclick="cancelBooking('${encodeURIComponent(b.id)}')">Remove Plan</button></div>`;}).join('');}
+function formatBookingDate(value){return new Date(value+'T00:00:00').toLocaleDateString(undefined,{month:'2-digit',day:'2-digit'});}
+function showToast(msg){const t=document.getElementById('toast');if(!t)return;t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+if(!localStorage.getItem('journiBookings')&&localStorage.getItem('catalystsBookings'))localStorage.setItem('journiBookings',localStorage.getItem('catalystsBookings'));
+renderBookings();
+window.scrollTo({top:0,behavior:'auto'});
+</script>
+</body>
+</html>
