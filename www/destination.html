@@ -8,27 +8,27 @@
 </head>
 <body class="destination-page">
 
-  <nav class="navbar">
+  <header class="navbar">
     <a class="brand" href="index.html#home">
-      <img src="images/logo.png" alt="Journi logo" class="brand-logo-img">
+      <span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span>
     </a>
-    <div class="nav-links">
-      <a href="index.html#home">Home</a>
-      <a class="active" href="index.html#destinations">Destinations</a>
-      <a href="index.html#planner" id="navPlanButton">Plan a Trip</a>
-      <a href="ai-planner.html">AI Planner</a>
+    <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a class="active" href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
       <a href="route-builder.html">Route Builder</a>
-    <a href="group-planning.html">Plan With Friends</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
       <a href="index.html#reviews">Reviews</a>
-    </div>
-  </nav>
+      <a href="my-plan.html">My Plan</a>
+    </nav>
+</header>
 
   <main id="destinationContent"></main>
 
   <footer>
     <div class="footer-logo">
-      <div class="logo-icon">✦</div>
-      <span>Journi</span>
+      <img class="footer-logo-img" src="images/journi-logo.png" alt="Journi logo">
     </div>
     <p>Plan Freely. Travel Confidently.</p>
     <span>© 2026 Journi Travel Planning</span>
@@ -40,7 +40,7 @@ const destinations = {
     name: 'Santorini', country: 'Greece', code: 'GR',
     hero: 'images/santorini.png',
     intro: 'A dreamlike island of whitewashed villages, blue-domed churches, volcanic landscapes and unforgettable Aegean sunsets.',
-    duration: '5 Days / 4 Nights', budget: 'From $1,850', style: 'Romantic · Scenic · Relaxing',
+    duration: '5 Days / 4 Nights', budget: '$3,200 – $4,500', style: 'Romantic · Scenic · Relaxing',
     tip: 'For a first visit, stay around Fira or Oia. Keep one afternoon flexible so the itinerary can adapt to weather and boat conditions.',
     attractions: [
       {name:'Oia Sunset', type:'Iconic View', image:'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=85', text:'Explore Oia’s whitewashed lanes and finish the day with a famous caldera sunset.'},
@@ -62,7 +62,7 @@ const destinations = {
     name: 'Singapore', country: 'Singapore', code: 'SG',
     hero: 'images/singapore.png',
     intro: 'A polished city-state where futuristic architecture, multicultural neighbourhoods, incredible food and tropical gardens meet.',
-    duration: '5 Days / 4 Nights', budget: 'From $1,450', style: 'City · Food · Culture',
+    duration: '5 Days / 4 Nights', budget: '$2,800 – $3,600', style: 'City · Food · Culture',
     tip: 'Singapore is compact and efficient. Group nearby attractions together to reduce travel time and leave evenings flexible for food discoveries.',
     attractions: [
       {name:'Merlion Park', type:'Iconic Landmark', image:'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=1200&q=85', text:'See Singapore’s iconic Merlion and enjoy the Marina Bay skyline.'},
@@ -82,9 +82,9 @@ const destinations = {
   },
   kyoto: {
     name: 'Kyoto', country: 'Japan', code: 'JP',
-    hero: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85',
+    hero: 'images/kyoto.png',
     intro: 'Japan’s cultural heart, filled with historic temples, traditional streets, seasonal scenery, gardens and unforgettable local food.',
-    duration: '5 Days / 4 Nights', budget: 'From $1,700', style: 'Culture · History · Food',
+    duration: '5 Days / 4 Nights', budget: '$2,600 – $3,600', style: 'Culture · History · Food',
     tip: 'Start famous temples early in the morning. Kyoto’s busier attractions are easier to enjoy before peak crowds.',
     attractions: [
       {name:'Kiyomizu-dera', type:'Temple', image:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85', text:'Explore one of Kyoto’s most famous temples and enjoy views over the historic city.'},
@@ -106,7 +106,7 @@ const destinations = {
     name: 'Bali', country: 'Indonesia', code: 'ID',
     hero: 'images/bali.png',
     intro: 'A tropical escape combining rice terraces, temples, beaches, wellness, local food and beautiful island landscapes.',
-    duration: '5 Days / 4 Nights', budget: 'From $1,250', style: 'Relaxing · Nature · Culture',
+    duration: '5 Days / 4 Nights', budget: '$2,200 – $3,200', style: 'Relaxing · Nature · Culture',
     tip: 'Keep your beach and outdoor activities flexible. Journi can help rearrange them if weather or traffic changes your plans.',
     attractions: [
       {name:'Ubud Rice Terraces', type:'Nature', image:'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=85', text:'Experience Bali’s lush landscapes and terraced rice fields around Ubud.'},
@@ -142,7 +142,6 @@ function renderDestination(place) {
   const d = destinations[place] || destinations.santorini;
   document.title = `Journi | ${d.name}`;
 
-  document.getElementById('navPlanButton').href = `index.html?destination=${encodeURIComponent(d.name)}#planner`;
 
   const attractions = d.attractions.map(a => `
     <article class="attraction-card">
@@ -188,13 +187,13 @@ function renderDestination(place) {
       <div class="destination-hero-shade"></div>
       <div class="destination-hero-content">
         <div class="destination-breadcrumb">
-          <a href="index.html#destinations">Destinations</a><span>→</span><span>${d.name}</span>
+          <a href="index.html#destinations">Destination</a><span>→</span><span>${d.name}</span>
         </div>
         <span class="destination-country">${d.country}</span>
         <h1>${d.name}</h1>
         <p class="destination-intro">${d.intro}</p>
         <div class="destination-hero-actions">
-          <a class="destination-plan-btn" href="index.html?destination=${encodeURIComponent(d.name)}#planner">Plan ${d.name} →</a>
+          <a class="destination-plan-btn" href="ai-planner.html?destination=${encodeURIComponent(d.name)}">Plan ${d.name} →</a>
           <a class="destination-back-btn" href="index.html#destinations">← All Destinations</a>
         </div>
       </div>
@@ -218,7 +217,7 @@ function renderDestination(place) {
           </div>
           <div class="trip-summary">
             <span>📅 ${d.duration}</span>
-            <span>💰 ${d.budget}</span>
+            <span class="destination-budget">💰 <b>ESTIMATED TRIP BUDGET</b> ${d.budget}</span>
             <span>✦ ${d.style}</span>
           </div>
         </div>
@@ -239,7 +238,7 @@ function renderDestination(place) {
         </div>
         <div class="destination-cta-buttons">
           <a class="gold-btn" href="book-itinerary.html?place=${encodeURIComponent(place)}">Use This Itinerary →</a>
-          <a class="destination-back-btn destination-own-trip" href="index.html?destination=${encodeURIComponent(d.name)}#planner">Plan Your Own Trip · Start Planning</a>
+          <a class="destination-back-btn destination-own-trip" href="ai-planner.html?destination=${encodeURIComponent(d.name)}">Plan Your Own Trip · AI Planner</a>
         </div>
       </div>
     </section>
@@ -249,5 +248,13 @@ function renderDestination(place) {
 const place = new URLSearchParams(window.location.search).get('place') || 'santorini';
 renderDestination(place.toLowerCase());
 </script>
+
+<script>
+  // Keep bookings created by an older version when upgrading to Journi.
+  if (!localStorage.getItem('journiBookings') && localStorage.getItem('catalystsBookings')) {
+    localStorage.setItem('journiBookings', localStorage.getItem('catalystsBookings'));
+  }
+</script>
+<button class="back-to-top" type="button" aria-label="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑ <span>Top</span></button>
 </body>
 </html>
