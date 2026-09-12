@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journi | DIY Trip</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="diy-page" id="top">
+  <header class="navbar">
+    <a class="brand" href="index.html#home">
+      <span class="brand-logo-wrap"><img class="brand-logo" src="images/journi-logo.png" alt="Journi logo"></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
+      <a href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a class="active" href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a href="my-plan.html">My Plan</a>
+    </nav>
+</header>
+
+  <main class="diy-main">
+    <div class="diy-head">
+      <div class="diy-eyebrow">BUILD IT YOUR WAY</div>
+      <h1>DIY Trip</h1>
+      <p>Completely customise your own trip. Choose your destination, flights and budget, then build your itinerary your way.</p>
+    </div>
+
+    <!-- Trip Details / Flights / Budget are presented like the existing Start Planning modal. -->
+    <div class="diy-setup-modal show" id="diySetupModal">
+      <div class="diy-setup-panel">
+        <button class="diy-setup-close" onclick="closeDiySetup()" aria-label="Close">×</button>
+        <h2>Trip Planner</h2>
+        <div class="diy-stepper" id="diyStepper">
+          <div class="diy-step active" data-step-indicator="1"><span>1</span>Trip Details</div>
+          <div class="diy-step-line"></div>
+          <div class="diy-step" data-step-indicator="2"><span>2</span>Flights</div>
+          <div class="diy-step-line"></div>
+          <div class="diy-step" data-step-indicator="3"><span>3</span>Budget</div>
+        </div>
+
+        <!-- STEP 1 -->
+        <section class="diy-panel diy-screen active-step" id="diyStep1">
+          <h2>Where are you headed?</h2>
+          <p class="diy-subtitle">Set the basics first. Your chosen date becomes Day 1.</p>
+          <div class="diy-grid-2">
+            <div class="diy-field">
+              <label>Destination</label>
+              <input id="destinationInput" type="text" placeholder="e.g. Japan, Singapore, Bali" autocomplete="off">
+            </div>
+            <div class="diy-field">
+              <label>Travelers</label>
+              <input id="travelersInput" type="number" min="1" max="20" value="2">
+            </div>
+            <div class="diy-field">
+              <label>Departure Date · Day 1</label>
+              <input id="departureInput" type="date">
+              <span class="diy-date-note">This date will always be Day 1.</span>
+            </div>
+            <div class="diy-field">
+              <label>Return Date</label>
+              <input id="returnInput" type="date">
+              <span class="diy-date-note" id="durationNote">Select a return date to calculate your trip length.</span>
+            </div>
+          </div>
+          <div class="diy-actions"><button class="diy-btn dark" onclick="goToFlights()">Search Flights →</button></div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section class="diy-panel diy-screen" id="diyStep2" hidden>
+          <h2>Available Flights</h2>
+          <p class="diy-subtitle">Flight options are matched to the destination you entered.</p>
+          <div class="flight-options" id="flightOptions"></div>
+          <div class="diy-actions split"><button class="diy-btn ghost" onclick="showSetupStep(1)">← Back</button><button class="diy-btn dark" onclick="goToBudget()">Continue to Budget →</button></div>
+        </section>
+
+        <!-- STEP 3 -->
+        <section class="diy-panel diy-screen" id="diyStep3" hidden>
+          <h2>Budget Planner</h2>
+          <p class="diy-subtitle">Allocate the amount you want to spend on your DIY trip.</p>
+          <div class="budget-layout">
+            <div>
+              <div class="budget-row"><label>Flights</label><input id="budgetFlights" type="range" min="0" max="6000" step="50" value="900"><div class="budget-value" id="budgetFlightsVal">$900</div></div>
+              <div class="budget-row"><label>Accommodation</label><input id="budgetHotel" type="range" min="0" max="8000" step="50" value="1000"><div class="budget-value" id="budgetHotelVal">$1,000</div></div>
+              <div class="budget-row"><label>Food & Dining</label><input id="budgetFood" type="range" min="0" max="4000" step="50" value="700"><div class="budget-value" id="budgetFoodVal">$700</div></div>
+              <div class="budget-row"><label>Activities</label><input id="budgetActivities" type="range" min="0" max="4000" step="50" value="500"><div class="budget-value" id="budgetActivitiesVal">$500</div></div>
+              <div class="budget-row"><label>Transport</label><input id="budgetTransport" type="range" min="0" max="3000" step="50" value="300"><div class="budget-value" id="budgetTransportVal">$300</div></div>
+            </div>
+            <aside class="budget-total"><span>ESTIMATED TRIP BUDGET</span><strong id="budgetTotal">$3,400</strong><p>Your total is based on the allocations above and can be changed later.</p></aside>
+          </div>
+          <div class="diy-actions split"><button class="diy-btn ghost" onclick="showSetupStep(2)">← Back</button><button class="diy-btn dark" onclick="buildPlan()">Continue to Plan →</button></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- STEP 4: the actual plan is a normal page section -->
+    <section class="diy-plan-page diy-screen" id="diyStep4" hidden>
+      <div class="diy-plan-container">
+        <div class="diy-summary" id="diySummary"></div>
+
+        <div class="plan-board">
+          <div class="plan-board-head">
+            <div>
+              <div class="diy-eyebrow">YOUR CUSTOM ITINERARY</div>
+              <h3>✦ Plan</h3>
+              <p>Drag an activity into a day. Move it between days or remove it whenever you want.</p>
+            </div>
+            <button class="diy-btn gold" onclick="openSetupForEdit()">Edit Trip Details</button>
+          </div>
+          <div class="day-grid" id="dayGrid"></div>
+        </div>
+
+        <div class="activity-pool-section" id="activityPoolSection">
+          <div class="activity-pool-head">
+            <div>
+              <div class="activity-pool-label">YOUR ACTIVITIES · DRAG INTO A DAY</div>
+              <p>Added places stay here outside the day boxes so you can easily drag them into any day.</p>
+            </div>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+
+        <div class="activity-builder">
+          <div class="activity-builder-head">
+            <div>
+              <div class="diy-eyebrow">ADD PLACES TO YOUR PLAN</div>
+              <h3>Activities</h3>
+              <p>Enter the area, choose a category, then pick a recommended option or add your own.</p>
+            </div>
+          </div>
+
+          <div class="activity-builder-grid">
+            <!-- LEFT: AREA -->
+            <div class="activity-builder-col area-col">
+              <label>AREA / CITY</label>
+              <input id="activityArea" type="text" placeholder="e.g. Kyoto" autocomplete="off">
+              <div class="activity-area-hint">Type the area you want to explore.</div>
+            </div>
+
+            <!-- MIDDLE: CATEGORY -->
+            <div class="activity-builder-col category-col">
+              <label>CATEGORY</label>
+              <div class="category-list" id="categoryList">
+                <button type="button" class="category-option cat-food selected" data-type="food" onclick="selectActivityType('food')">🍴 Food & Dining</button>
+                <button type="button" class="category-option cat-shopping" data-type="shopping" onclick="selectActivityType('shopping')">🛍 Shopping</button>
+                <button type="button" class="category-option cat-culture" data-type="culture" onclick="selectActivityType('culture')">🏛 Culture</button>
+                <button type="button" class="category-option cat-nature" data-type="nature" onclick="selectActivityType('nature')">🌿 Nature</button>
+                <button type="button" class="category-option cat-transit" data-type="transit" onclick="selectActivityType('transit')">✈ Transit</button>
+                <button type="button" class="category-option cat-custom" data-type="custom" onclick="selectActivityType('custom')">✦ Other</button>
+              </div>
+            </div>
+
+            <!-- RIGHT: OPTIONS -->
+            <div class="activity-builder-col options-col">
+              <div class="options-title-row"><label>OPTIONS</label><span id="optionContext">Recommended for Kyoto</span></div>
+              <div id="activityOptions" class="activity-options"></div>
+              <div id="customActivityBox" class="custom-activity-box" hidden>
+                <input id="customActivityName" placeholder="Activity / place name">
+                <textarea id="customActivityDetails" rows="3" placeholder="Time, address, opening hours, price or other details..."></textarea>
+              </div>
+              <button class="diy-btn dark add-activity-btn" type="button" onclick="addSelectedActivity()">+ Add to Activities</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="diy-actions diy-plan-actions">
+          <button class="diy-btn ghost" onclick="showSetupStep(3); $('diySetupModal').classList.add('show');">← Edit Budget</button>
+          <button class="diy-btn gold" onclick="saveDiyPlan()">Save DIY Plan ✓</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="diy-toast" id="diyToast"></div>
+  <button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑ <span>Top</span></button>
+
+<script>
+const airlineMap = {
+  singapore: [
+    ['SQ','Singapore Airlines','Non-stop · Kuala Lumpur → Singapore','$180'],
+    ['AK','AirAsia','Non-stop · Kuala Lumpur → Singapore','$85'],
+    ['TR','Scoot','Non-stop · Kuala Lumpur → Singapore','$95']
+  ],
+  japan: [
+    ['MH','Malaysia Airlines','Non-stop · Kuala Lumpur → Tokyo / Osaka','$520'],
+    ['JL','Japan Airlines','Non-stop · Kuala Lumpur → Tokyo','$610'],
+    ['SQ','Singapore Airlines','1 stop · Kuala Lumpur → Osaka','$590']
+  ],
+  kyoto: [
+    ['MH','Malaysia Airlines','Non-stop · Kuala Lumpur → Osaka','$520'],
+    ['JL','Japan Airlines','Non-stop · Kuala Lumpur → Tokyo','$610'],
+    ['SQ','Singapore Airlines','1 stop · Kuala Lumpur → Osaka','$590']
+  ],
+  bali: [
+    ['AK','AirAsia','Non-stop · Kuala Lumpur → Bali','$150'],
+    ['MH','Malaysia Airlines','Non-stop · Kuala Lumpur → Bali','$210'],
+    ['OD','Batik Air','Non-stop · Kuala Lumpur → Bali','$175']
+  ],
+  santorini: [
+    ['EK','Emirates','1 stop · Kuala Lumpur → Santorini','$920'],
+    ['QR','Qatar Airways','1 stop · Kuala Lumpur → Santorini','$880'],
+    ['TK','Turkish Airlines','1 stop · Kuala Lumpur → Santorini','$840']
+  ]
+};
+
+const placeOptions = {
+  kyoto: {
+    food: [
+      {name:'Nishiki Warai', details:'11:00 AM – 10:00 PM · Nishiki Market area · Okonomiyaki and Kyoto-style comfort food · Est. $18–30'},
+      {name:'Gion Karyo', details:'5:30 PM – 10:00 PM · Gion, Kyoto · Traditional kaiseki dining · Est. $70–120'},
+      {name:'Kichi Kichi Omurice', details:'5:00 PM – 9:00 PM · Nakagyo, Kyoto · Famous omurice experience · Est. $12–20'}
+    ],
+    shopping: [
+      {name:'Nishiki Market', details:'10:00 AM – 6:00 PM · Nakagyo, Kyoto · Food, crafts and souvenirs'},
+      {name:'Shinkyogoku Shopping Street', details:'10:30 AM – 8:00 PM · Kawaramachi · Fashion, gifts and local snacks'},
+      {name:'Teramachi Street', details:'10:30 AM – 7:30 PM · Central Kyoto · Traditional shops and boutiques'}
+    ],
+    culture: [
+      {name:'Kiyomizu-dera', details:'6:00 AM – 6:00 PM · Higashiyama · Historic temple with panoramic city views · Est. $3'},
+      {name:'Fushimi Inari Taisha', details:'Open 24 hours · Fushimi · Torii gate trails · Free entry'},
+      {name:'Gion District', details:'Best explored 4:00 PM – 8:00 PM · Higashiyama · Historic streets and traditional architecture'}
+    ],
+    nature: [
+      {name:'Arashiyama Bamboo Grove', details:'Open 24 hours · Arashiyama · Bamboo forest walk · Free'},
+      {name:'Philosopher’s Path', details:'Open 24 hours · Higashiyama · Scenic canal-side walk · Free'},
+      {name:'Maruyama Park', details:'Open 24 hours · Gion · Relaxed green space near Yasaka Shrine · Free'}
+    ],
+    transit: [
+      {name:'Kyoto Station', details:'Main transport hub · Higashiyama / Central Kyoto connections · Trains, buses and taxis'},
+      {name:'Kansai Airport Transfer', details:'JR Haruka or airport limousine · Allow about 75–100 minutes'},
+      {name:'Kyoto City Bus', details:'Day pass / single rides · Useful for temples and central sightseeing'}
+    ]
+  },
+  singapore: {
+    food: [
+      {name:'Maxwell Food Centre', details:'8:00 AM – 10:00 PM · Chinatown · Hawker favourites · Est. $8–18'},
+      {name:'Lau Pa Sat', details:'Open 24 hours · Downtown · Satay and local dishes · Est. $10–25'},
+      {name:'Burnt Ends', details:'5:30 PM – 11:00 PM · Dempsey / Orchard area · Modern barbecue · Est. $80–150'}
+    ],
+    shopping: [
+      {name:'Orchard Road', details:'10:00 AM – 10:00 PM · Orchard · Major malls and fashion'},
+      {name:'Bugis Street', details:'11:00 AM – 10:00 PM · Bugis · Affordable fashion and souvenirs'},
+      {name:'VivoCity', details:'10:00 AM – 10:00 PM · HarbourFront · Large shopping mall'}
+    ],
+    culture: [
+      {name:'National Gallery Singapore', details:'10:00 AM – 7:00 PM · Civic District · Southeast Asian art · Est. $15'},
+      {name:'Chinatown', details:'Best explored 9:00 AM – 8:00 PM · Heritage streets, temples and food'},
+      {name:'Little India', details:'Best explored 10:00 AM – 8:00 PM · Temples, shops and Indian cuisine'}
+    ],
+    nature: [
+      {name:'Gardens by the Bay', details:'5:00 AM – 2:00 AM · Marina Bay · Supertrees and gardens · Est. $0–35'},
+      {name:'Singapore Botanic Gardens', details:'5:00 AM – 12:00 AM · Tanglin · UNESCO garden · Free'},
+      {name:'Sentosa Island', details:'Open daily · Beaches, walks and attractions · Activity costs vary'}
+    ],
+    transit: [
+      {name:'Singapore MRT', details:'Approx. 5:30 AM – midnight · Fast city-wide transport · Est. $2–5 per ride'},
+      {name:'Changi Airport Transfer', details:'MRT, taxi or ride-hailing · Allow 30–60 minutes depending on traffic'},
+      {name:'Airport Express / Taxi', details:'Useful for hotel transfer · Est. $20–40 by taxi'}
+    ]
+  },
+  bali: {
+    food: [
+      {name:'Locavore NXT', details:'Lunch / dinner sessions · Ubud · Modern Indonesian tasting menu · Est. $80–130'},
+      {name:'Warung Babi Guling Pak Malen', details:'9:00 AM – 8:00 PM · Seminyak · Balinese roast pork · Est. $8–15'},
+      {name:'Sundays Beach Club', details:'9:00 AM – 10:00 PM · Uluwatu · Beach dining · Est. $25–50'}
+    ],
+    shopping: [
+      {name:'Seminyak Village', details:'10:00 AM – 10:00 PM · Seminyak · Fashion, gifts and dining'},
+      {name:'Ubud Art Market', details:'8:00 AM – 6:00 PM · Ubud · Crafts, textiles and souvenirs'},
+      {name:'Beachwalk Shopping Center', details:'10:00 AM – 10:00 PM · Kuta · Shops, dining and entertainment'}
+    ],
+    culture: [
+      {name:'Uluwatu Temple', details:'7:00 AM – 7:00 PM · Uluwatu · Cliff-top temple · Est. $4'},
+      {name:'Tirta Empul Temple', details:'8:00 AM – 6:00 PM · Tampaksiring · Sacred spring temple · Est. $4'},
+      {name:'Tanah Lot', details:'7:00 AM – 7:00 PM · Tabanan · Iconic sea temple · Est. $5'}
+    ],
+    nature: [
+      {name:'Tegallalang Rice Terraces', details:'7:00 AM – 6:00 PM · Ubud · Rice terraces and viewpoints · Est. $2–5'},
+      {name:'Mount Batur', details:'Early morning trek · Kintamani · Sunrise hike · Est. $35–60'},
+      {name:'Nusa Penida', details:'Day trip · Island nature, cliffs and beaches · Est. $45–90'}
+    ],
+    transit: [
+      {name:'Airport Transfer', details:'Ngurah Rai Airport to hotel · Allow 30–90 minutes depending on area'},
+      {name:'Private Driver', details:'Common full-day option · About 8–10 hours · Est. $45–70'},
+      {name:'Ride-hailing', details:'GoJek / Grab · Convenient for short trips in busier areas'}
+    ]
+  }
+};
+
+const state = {
+  setupStep:1,
+  destination:'', travelers:2, departure:'', returnDate:'', flight:null,
+  budget:{flights:900,hotel:1000,food:700,activities:500,transport:300},
+  activities:[], placed:{}, selectedType:'food', selectedOption:null
+};
+
+const $ = id => document.getElementById(id);
+const money = n => '$' + Number(n).toLocaleString('en-US');
+
+function localDateString(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function parseLocalDate(s){
+  const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d);
+}
+function formatDate(s,short=false){
+  if(!s) return '—';
+  return parseLocalDate(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:short?undefined:'numeric'});
+}
+function tripDays(){
+  if(!state.departure||!state.returnDate) return 1;
+  return Math.max(1,Math.round((parseLocalDate(state.returnDate)-parseLocalDate(state.departure))/86400000)+1);
+}
+function slugify(s){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'');}
+
+function showSetupStep(n){
+  state.setupStep=n;
+  $('diySetupModal').classList.add('show');
+  document.querySelectorAll('#diySetupModal .diy-screen').forEach((el,i)=>el.hidden=(i!==n-1));
+  document.querySelectorAll('[data-step-indicator]').forEach(el=>{
+    const i=Number(el.dataset.stepIndicator);
+    el.classList.toggle('active',i===n); el.classList.toggle('done',i<n);
+  });
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function closeDiySetup(){
+  // The modal close is intentionally non-destructive. It lets the user return to the DIY landing area.
+  $('diySetupModal').classList.remove('show');
+}
+function openSetupForEdit(){
+  showSetupStep(1);
+  $('diySetupModal').classList.add('show');
+}
+
+function validateDetails(){
+  state.destination=$('destinationInput').value.trim();
+  state.travelers=Math.max(1,Number($('travelersInput').value)||1);
+  state.departure=$('departureInput').value;
+  state.returnDate=$('returnInput').value;
+  if(!state.destination||!state.departure||!state.returnDate){showToast('Please complete destination and dates.');return false;}
+  if(parseLocalDate(state.returnDate)<parseLocalDate(state.departure)){showToast('Return date must be after Day 1.');return false;}
+  return true;
+}
+function goToFlights(){
+  if(!validateDetails()) return;
+  renderFlights(); showSetupStep(2);
+}
+function renderFlights(){
+  const key=slugify(state.destination);
+  const options=airlineMap[key]||[
+    ['EK','Emirates','1 stop · Kuala Lumpur → '+state.destination,'$720'],
+    ['QR','Qatar Airways','1 stop · Kuala Lumpur → '+state.destination,'$680'],
+    ['TK','Turkish Airlines','1 stop · Kuala Lumpur → '+state.destination,'$650']
+  ];
+  $('flightOptions').innerHTML=options.map((f,i)=>`<div class="flight-option ${i===0?'selected':''}" onclick="selectFlight(${i})" data-flight-index="${i}"><div class="flight-airline"><div class="airline-badge">${f[0]}</div><div><strong>${f[1]}</strong><small>${f[2]}</small></div></div><div class="flight-time"><strong>${i===0?'08:30 AM':'10:45 PM'}</strong><small>${i===0?'Recommended option':'Flexible departure'}</small></div><div class="flight-price">${f[3]}<small>per person</small></div><span>◉</span></div>`).join('');
+  state._flightOptions=options; selectFlight(0);
+}
+function selectFlight(i){
+  document.querySelectorAll('.flight-option').forEach((el,j)=>el.classList.toggle('selected',i===j));
+  const f=state._flightOptions[i]; state.flight={airline:f[1],code:f[0],route:f[2],price:f[3]};
+}
+function goToBudget(){
+  if(!state.flight){showToast('Please choose a flight.');return;}
+  showSetupStep(3); updateBudgetUI();
+}
+function updateBudgetUI(){
+  const pairs={budgetFlights:'flights',budgetHotel:'hotel',budgetFood:'food',budgetActivities:'activities',budgetTransport:'transport'};
+  Object.entries(pairs).forEach(([id,key])=>{ $(id).value=state.budget[key]; $(id+'Val').textContent=money(state.budget[key]); });
+  $('budgetTotal').textContent=money(Object.values(state.budget).reduce((a,b)=>a+Number(b),0));
+}
+['budgetFlights','budgetHotel','budgetFood','budgetActivities','budgetTransport'].forEach(id=>$(id).addEventListener('input',()=>{
+  const key={budgetFlights:'flights',budgetHotel:'hotel',budgetFood:'food',budgetActivities:'activities',budgetTransport:'transport'}[id];
+  state.budget[key]=Number($(id).value); updateBudgetUI();
+}));
+
+function buildPlan(){
+  if(!validateDetails()) {showSetupStep(1);return;}
+  state.budget.flights=Number($('budgetFlights').value); state.budget.hotel=Number($('budgetHotel').value); state.budget.food=Number($('budgetFood').value); state.budget.activities=Number($('budgetActivities').value); state.budget.transport=Number($('budgetTransport').value);
+  state.placed={};
+  renderSummary(); renderDayGrid(); renderActivities();
+  $('diySetupModal').classList.remove('show');
+  $('diyStep4').hidden=false;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderSummary(){
+  const total=Object.values(state.budget).reduce((a,b)=>a+Number(b),0);
+  $('diySummary').innerHTML=`
+    <div class="summary-item"><span>Destination</span><strong>${escapeHtml(state.destination)}</strong><button onclick="openSetupForEdit()">Edit</button></div>
+    <div class="summary-item"><span>Travelers</span><strong>${state.travelers} ${state.travelers===1?'Traveler':'Travelers'}</strong><button onclick="openSetupForEdit()">Edit</button></div>
+    <div class="summary-item"><span>Dates</span><strong>${formatDate(state.departure,true)} – ${formatDate(state.returnDate,true)}</strong><button onclick="openSetupForEdit()">Edit</button></div>
+    <div class="summary-item"><span>Budget</span><strong>${money(total)}</strong><button onclick="showSetupStep(3)">Edit</button></div>`;
+}
+function renderDayGrid(){
+  const n=tripDays();
+  $('dayGrid').innerHTML=Array.from({length:n},(_,i)=>{
+    const d=parseLocalDate(state.departure); d.setDate(d.getDate()+i);
+    return `<div class="day-column"><div class="day-label">DAY ${i+1}<span class="day-date">${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</span></div><div class="day-drop" data-day="${i+1}" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)" ondrop="dropActivity(event,${i+1})"><div class="drop-placeholder" id="placeholder-${i+1}">Drop here</div></div></div>`;
+  }).join('');
+  Object.entries(state.placed).forEach(([day,ids])=>ids.forEach(id=>renderPlaced(id,Number(day))));
+}
+
+function currentOptions(){
+  const area=slugify($('activityArea').value||state.destination);
+  const data=placeOptions[area];
+  return data && data[state.selectedType] ? data[state.selectedType] : null;
+}
+function selectActivityType(type){
+  state.selectedType=type; state.selectedOption=null;
+  document.querySelectorAll('.category-option').forEach(b=>b.classList.toggle('selected',b.dataset.type===type));
+  renderActivityOptions();
+}
+function renderActivityOptions(){
+  const area=$('activityArea').value.trim()||state.destination||'your area';
+  $('optionContext').textContent=`Recommended for ${area}`;
+  const list=currentOptions();
+  $('customActivityBox').hidden=state.selectedType!=='custom' && !!list;
+  if(state.selectedType==='custom'){
+    $('activityOptions').innerHTML='<div class="no-options">Other activity — enter your own place and details on the right.</div>';
+    $('customActivityBox').hidden=false; return;
+  }
+  if(list){
+    $('activityOptions').innerHTML=list.map((o,i)=>`<button type="button" class="recommendation-card ${i===0?'selected':''}" onclick="chooseRecommendation(${i})"><span class="recommendation-radio">${i===0?'✓':''}</span><div><strong>${escapeHtml(o.name)}</strong><small>${escapeHtml(o.details)}</small></div></button>`).join('');
+    state.selectedOption=0;
+    $('customActivityBox').hidden=false;
+    $('customActivityBox').querySelector('input').placeholder='Or add your own place';
+  }else{
+    $('activityOptions').innerHTML='<div class="no-options">No local recommendations yet. Add your own place below.</div>';
+    $('customActivityBox').hidden=false;
+  }
+}
+function chooseRecommendation(i){
+  state.selectedOption=i;
+  document.querySelectorAll('.recommendation-card').forEach((el,j)=>{el.classList.toggle('selected',j===i);el.querySelector('.recommendation-radio').textContent=j===i?'✓':'';});
+}
+function addSelectedActivity(){
+  const list=currentOptions();
+  let name='', details='';
+  if(state.selectedType!=='custom' && list && list[state.selectedOption]){
+    name=list[state.selectedOption].name; details=list[state.selectedOption].details;
+    const customName=$('customActivityName').value.trim(); const customDetails=$('customActivityDetails').value.trim();
+    if(customName){name=customName; if(customDetails)details=customDetails;}
+  }else{
+    name=$('customActivityName').value.trim(); details=$('customActivityDetails').value.trim();
+  }
+  if(!name){showToast('Please choose an option or enter your own place.');return;}
+  const activity={id:'a'+Date.now()+Math.random().toString(16).slice(2),name,type:state.selectedType,details:details||'Custom activity'};
+  state.activities.push(activity); renderActivities();
+  $('customActivityName').value=''; $('customActivityDetails').value='';
+  const pool=$('activityList');
+  if(pool) pool.scrollIntoView({behavior:'smooth',block:'nearest'});
+  showToast('Added to your activities. Drag the colour card into a day.');
+}
+$('activityArea').addEventListener('input',renderActivityOptions);
+
+function renderActivities(){
+  $('activityList').innerHTML=state.activities.map(a=>`<div class="activity-chip type-${a.type}" draggable="true" ondragstart="startActivityDrag(event,'${a.id}')"><div><strong>${escapeHtml(a.name)}</strong><small>${escapeHtml(a.details)}</small></div><button class="chip-x" onclick="removeActivity('${a.id}')" title="Delete">×</button></div>`).join('') || '<div class="activity-empty">No activities yet — choose a recommendation or add your own above.</div>';
+}
+function startActivityDrag(e,id){e.dataTransfer.setData('text/plain',id+'|new');e.dataTransfer.effectAllowed='copy';}
+function startPlacedDrag(e,id,day){e.dataTransfer.setData('text/plain',id+'|placed|'+day);e.dataTransfer.effectAllowed='move';}
+function allowDrop(e){e.preventDefault();e.currentTarget.classList.add('drag-over');}
+function leaveDrop(e){e.currentTarget.classList.remove('drag-over');}
+function dropActivity(e,day){
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  const parts=e.dataTransfer.getData('text/plain').split('|'); const id=parts[0],mode=parts[1];
+  if(mode==='new'){
+    if(!state.placed[day])state.placed[day]=[];
+    if(!state.placed[day].includes(id))state.placed[day].push(id);
+  }else if(mode==='placed'){
+    const from=Number(parts[2]);
+    if(from!==day){state.placed[from]=(state.placed[from]||[]).filter(x=>x!==id);if(!state.placed[day])state.placed[day]=[];if(!state.placed[day].includes(id))state.placed[day].push(id);}
+  }
+  renderDayGrid(); showToast('Itinerary updated.');
+}
+function renderPlaced(id,day){
+  const a=state.activities.find(x=>x.id===id); if(!a)return;
+  const box=document.querySelector(`.day-drop[data-day="${day}"]`); if(!box)return;
+  const placeholder=box.querySelector('.drop-placeholder'); if(placeholder)placeholder.remove();
+  const card=document.createElement('div'); card.className='planned-card type-'+a.type; card.draggable=true; card.ondragstart=e=>startPlacedDrag(e,a.id,day); card.innerHTML=`<div><strong>${escapeHtml(a.name)}</strong><small>${escapeHtml(a.details)}</small></div><button class="planned-delete" onclick="deletePlaced('${a.id}',${day})" title="Remove from day">×</button>`; box.appendChild(card);
+}
+function deletePlaced(id,day){state.placed[day]=(state.placed[day]||[]).filter(x=>x!==id);renderDayGrid();showToast('Removed from Day '+day+'.');}
+function removeActivity(id){state.activities=state.activities.filter(a=>a.id!==id);Object.keys(state.placed).forEach(day=>state.placed[day]=(state.placed[day]||[]).filter(x=>x!==id));renderDayGrid();renderActivities();showToast('Activity deleted.');}
+function saveDiyPlan(){
+  if(!validateDetails()){showSetupStep(1);return;}
+  const total=Object.values(state.budget).reduce((a,b)=>a+Number(b),0);
+  const key=slugify(state.destination);
+  const imageMap={singapore:'images/singapore.png',kyoto:'images/kyoto.png',bali:'images/bali.png',santorini:'images/santorini.png',japan:'images/kyoto.png'};
+  const countryMap={singapore:'Singapore',kyoto:'Japan',japan:'Japan',bali:'Indonesia',santorini:'Greece'};
+  const days=[];
+  const n=tripDays();
+  for(let i=1;i<=n;i++){
+    const d=parseLocalDate(state.departure); d.setDate(d.getDate()+i-1);
+    const ids=state.placed[i]||[];
+    const events=ids.map(id=>{
+      const a=state.activities.find(x=>x.id===id);
+      if(!a)return null;
+      return ['', a.type==='food'?'🍴':a.type==='shopping'?'🛍':a.type==='culture'?'🏛':a.type==='nature'?'🌿':a.type==='transit'?'✈':'✦', a.name, a.details||'Activity added to your DIY plan.'];
+    }).filter(Boolean);
+    days.push({title: events.length ? `${state.destination} · Day ${i}` : 'Open Day', date:localDateString(d), events});
+  }
+  const plan={
+    id:'diy-'+Date.now(), type:'DIY', destination:state.destination, country:countryMap[key]||state.destination,
+    travelers:state.travelers, startDate:state.departure, endDate:state.returnDate,
+    budget:total, budgetBreakdown:{...state.budget}, flight:state.flight,
+    activities:state.activities, placed:state.placed, days,
+    image:imageMap[key]||'images/home-river.png', createdAt:Date.now()
+  };
+  let bookings=[];
+  try{bookings=JSON.parse(localStorage.getItem('journiBookings')||'[]'); if(!Array.isArray(bookings))bookings=[];}catch(e){bookings=[];}
+  bookings.push(plan);
+  localStorage.setItem('journiBookings',JSON.stringify(bookings));
+  localStorage.setItem('journi_diy_plan',JSON.stringify(plan));
+  showToast('DIY plan saved to My Plan ✓');
+  setTimeout(()=>{window.location.href='my-plan.html';},700);
+}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function showToast(msg){const t=$('diyToast');t.textContent=msg;t.classList.add('show');clearTimeout(window._toast);window._toast=setTimeout(()=>t.classList.remove('show'),2200);}
+
+$('departureInput').addEventListener('change',()=>{$('returnInput').min=$('departureInput').value;updateDurationNote();});
+$('returnInput').addEventListener('change',updateDurationNote);
+function updateDurationNote(){
+  if(!$('departureInput').value||!$('returnInput').value){$('durationNote').textContent='Select a return date to calculate your trip length.';return;}
+  const diff=tripDaysFromInputs(); $('durationNote').textContent=diff<1?'Return date must be after Day 1.':`${diff} ${diff===1?'day':'days'} total · ${Math.max(0,diff-1)} ${diff-1===1?'night':'nights'}`;
+}
+function tripDaysFromInputs(){return Math.round((parseLocalDate($('returnInput').value)-parseLocalDate($('departureInput').value))/86400000)+1;}
+
+const params=new URLSearchParams(location.search); if(params.get('destination')) $('destinationInput').value=params.get('destination');
+const today=new Date(); if(!$('departureInput').value)$('departureInput').value=localDateString(today); if(!$('returnInput').value){const r=new Date(today);r.setDate(r.getDate()+4);$('returnInput').value=localDateString(r);} $('returnInput').min=$('departureInput').value; updateDurationNote(); updateBudgetUI(); renderActivityOptions();
+</script>
+</body>
+</html>
