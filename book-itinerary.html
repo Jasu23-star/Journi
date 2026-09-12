@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journi | Use This Itinerary</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="booking-plan-page">
+
+<nav class="navbar">
+  <a class="brand" href="index.html#home"><img src="images/logo.png" alt="Journi logo" class="brand-logo-img"></a>
+  <div class="nav-links">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#destinations">Destinations</a>
+    <a class="active" href="index.html#planner">Plan a Trip</a>
+    <a href="ai-planner.html">AI Planner</a>
+    <a href="route-builder.html">Route Builder</a>
+    <a href="group-planning.html">Plan With Friends</a>
+    <a href="index.html#reviews">Reviews</a>
+  </div>
+</nav>
+
+<main id="bookingContent"></main>
+
+<div class="edit-modal" id="editModal" aria-hidden="true">
+  <div class="edit-box">
+    <button class="edit-close" onclick="closeEdit()">×</button>
+    <p class="eyebrow dark">EDIT YOUR PLAN</p>
+    <h2>Make this itinerary yours</h2>
+    <p>Change the activity or location. Nothing is booked until you confirm.</p>
+    <label for="editTitle">Activity / Location</label>
+    <input id="editTitle" type="text">
+    <label for="editDescription">Details</label>
+    <textarea id="editDescription"></textarea>
+    <div class="edit-box-actions">
+      <button class="back-btn" onclick="closeEdit()">Cancel</button>
+      <button class="gold-btn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="booking-toast" id="bookingToast"></div>
+
+<script>
+const plans = {
+  singapore: {
+    name:'Singapore', country:'Singapore', image:'images/singapore.png', duration:'5 Days / 4 Nights', budget:'From $1,450',
+    days:[
+      {title:'Arrival & Marina Bay', events:[['10:30 AM','🛬','Arrive at Changi Airport','Airport arrival and baggage collection'],['12:00 PM','🏨','Hotel transfer & check-in','Settle in and refresh at your hotel'],['4:00 PM','◎','Merlion Park','Enjoy the Marina Bay skyline and waterfront'],['7:30 PM','🍽','Dinner by the waterfront','Relax with dinner overlooking Marina Bay']]},
+      {title:'Gardens & City Icons', events:[['9:00 AM','🌿','Gardens by the Bay','Explore the Supertree Grove'],['11:30 AM','🌺','Cloud Forest & Flower Dome','Discover the indoor gardens'],['2:00 PM','🍜','Hawker Centre Lunch','Try local Singaporean favourites'],['4:00 PM','🏙','Marina Bay Sands','Explore the waterfront and city views'],['7:30 PM','✦','Night Skyline','Enjoy Singapore after sunset']]},
+      {title:'Culture & Food', events:[['9:00 AM','🏮','Chinatown Heritage Walk','Explore temples and historic streets'],['12:00 PM','🍜','Maxwell Food Centre','Local lunch and hawker food'],['2:30 PM','🕌','Little India','Discover colourful streets and culture'],['5:00 PM','📷','Kampong Glam','Explore Arab Street and Haji Lane'],['7:30 PM','🍽','Local Dinner','Try a Singaporean dinner favourite']]},
+      {title:'Sentosa Day', events:[['9:00 AM','🏝','Sentosa Island','Travel to Sentosa for a full island day'],['10:30 AM','🎢','Island Attractions','Choose Universal Studios or another attraction'],['1:30 PM','🍴','Beachside Lunch','Relax and enjoy lunch near the coast'],['3:00 PM','🌊','Beach Time','Free time by the water'],['6:30 PM','🚠','Cable Car / Waterfront Walk','Return towards HarbourFront'],['7:30 PM','🍽','Dinner at Sentosa','Finish the day with dinner']]},
+      {title:'Shopping & Departure', events:[['9:00 AM','☕','Breakfast','Slow final morning at the hotel'],['10:30 AM','🛍','Orchard Road','Last-minute shopping'],['12:30 PM','☕','Coffee Break','Relax before leaving the city'],['2:00 PM','🏨','Hotel Check-out','Collect luggage and prepare for transfer'],['3:00 PM','🚕','Transfer to Changi Airport','Airport transfer'],['5:30 PM','✈','Departure','End of your Singapore journey']]}
+    ]
+  },
+  santorini: {
+    name:'Santorini', country:'Greece', image:'images/santorini.png', duration:'5 Days / 4 Nights', budget:'From $1,850',
+    days:[
+      {title:'Arrival & Oia', events:[['11:00 AM','🛬','Arrive Santorini','Airport transfer to your hotel'],['1:00 PM','🏨','Hotel Check-in','Settle in and refresh'],['3:30 PM','📷','Explore Oia','Walk through the whitewashed village'],['6:30 PM','🌅','Oia Sunset','Enjoy the famous caldera sunset'],['8:00 PM','🍽','Dinner','Dinner overlooking the caldera']]},
+      {title:'Fira & Imerovigli', events:[['9:00 AM','☕','Breakfast','Breakfast at the hotel'],['10:00 AM','🚶','Fira to Imerovigli Walk','Cliffside caldera views'],['1:00 PM','🍴','Caldera Lunch','Lunch with a view'],['3:00 PM','🏘','Explore Fira','Shops, cafés and viewpoints'],['7:00 PM','🍽','Sunset Dinner','Dinner in Fira']]},
+      {title:'Akrotiri & Red Beach', events:[['9:00 AM','☕','Breakfast','Start the day at the hotel'],['10:00 AM','🏛','Ancient Akrotiri','Explore the archaeological site'],['1:00 PM','🍴','Lunch in Akrotiri','Local island lunch'],['3:00 PM','🏖','Red Beach','Visit the dramatic volcanic coast'],['5:30 PM','🍷','Local Winery','Taste Santorini wines']]},
+      {title:'Caldera Cruise', events:[['9:00 AM','☕','Breakfast','Breakfast at the hotel'],['10:00 AM','⛵','Catamaran Cruise','Sail around the caldera'],['1:00 PM','🌋','Volcanic Hot Springs','Swim and explore the volcanic area'],['4:30 PM','⛵','Return to Oia','Relax after the cruise'],['6:30 PM','🌅','Sunset Photos','Free time for photos'],['8:00 PM','🍽','Free Evening','Choose your own dinner']]},
+      {title:'Slow Morning & Departure', events:[['9:00 AM','☕','Breakfast','Enjoy a slow final morning'],['10:00 AM','🚶','Last Walk Through Oia','Final views of Santorini'],['11:30 AM','🛍','Souvenir Shopping','Pick up gifts and keepsakes'],['1:00 PM','🏨','Hotel Check-out','Collect luggage'],['2:00 PM','🚕','Airport Transfer','Transfer to the airport'],['4:30 PM','✈','Departure','End of your Santorini journey']]}
+    ]
+  },
+  kyoto: {
+    name:'Kyoto', country:'Japan', image:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85', duration:'5 Days / 4 Nights', budget:'From $1,700',
+    days:[
+      {title:'Arrival & Gion', events:[['11:00 AM','🚆','Arrive Kyoto','Transfer from station to hotel'],['1:00 PM','🏨','Hotel Check-in','Settle in and refresh'],['4:00 PM','🏮','Gion Walk','Explore Kyoto’s historic streets'],['7:00 PM','🍱','Traditional Dinner','Enjoy a Japanese dinner']]},
+      {title:'Fushimi Inari & Higashiyama', events:[['7:30 AM','☕','Breakfast','Early breakfast before the crowds'],['8:30 AM','⛩','Fushimi Inari Shrine','Walk through the vermilion torii gates'],['12:00 PM','🍜','Lunch','Local lunch near Higashiyama'],['2:00 PM','⛩','Kiyomizu-dera','Explore the famous temple'],['4:00 PM','🏘','Sannenzaka','Walk the traditional streets'],['6:30 PM','🏮','Gion Evening','Relax around Gion']]},
+      {title:'Arashiyama', events:[['8:00 AM','☕','Breakfast','Breakfast at the hotel'],['9:00 AM','🌿','Bamboo Grove','Explore Arashiyama Bamboo Forest'],['11:00 AM','⛩','Tenryu-ji Temple','Visit the historic temple gardens'],['1:00 PM','🍜','Riverside Lunch','Lunch near the Katsura River'],['3:00 PM','🚶','Riverside Walk','Enjoy the scenery'],['7:00 PM','🍱','Central Kyoto Dinner','Dinner near downtown']]},
+      {title:'Golden Pavilion & Market', events:[['9:00 AM','☕','Breakfast','Breakfast at the hotel'],['10:00 AM','✨','Kinkaku-ji Golden Pavilion','Visit the famous golden temple'],['12:30 PM','🍣','Nishiki Market','Explore local food and snacks'],['3:00 PM','🍵','Tea Experience','Traditional tea experience'],['6:00 PM','🌙','Free Evening','Explore Kyoto at your own pace']]},
+      {title:'Slow Morning & Departure', events:[['9:00 AM','☕','Breakfast','Final breakfast'],['10:00 AM','🛍','Souvenir Shopping','Pick up final gifts'],['11:30 AM','☕','Last Café Stop','Relax before departure'],['1:00 PM','🏨','Hotel Check-out','Collect luggage'],['2:00 PM','🚆','Station Transfer','Transfer to Kyoto Station'],['4:00 PM','✈','Departure','End of your Kyoto journey']]}
+    ]
+  },
+  bali: {
+    name:'Bali', country:'Indonesia', image:'images/bali.png', duration:'5 Days / 4 Nights', budget:'From $1,250',
+    days:[
+      {title:'Arrival & Seminyak', events:[['11:00 AM','🛬','Arrive Bali','Airport transfer to your hotel'],['1:00 PM','🏨','Hotel Check-in','Settle in and refresh'],['4:00 PM','🏖','Seminyak Beach Walk','Relax by the coast'],['6:30 PM','🌅','Sunset','Enjoy the sunset'],['8:00 PM','🍽','Sunset Dinner','Dinner in Seminyak']]},
+      {title:'Ubud & Rice Terraces', events:[['8:00 AM','☕','Breakfast','Breakfast at the hotel'],['9:00 AM','🌿','Ubud','Explore central Ubud'],['11:00 AM','🌾','Tegallalang Rice Terraces','Walk among the terraces'],['1:30 PM','🍜','Local Lunch','Balinese lunch'],['3:00 PM','🛍','Ubud Market','Explore local crafts'],['6:30 PM','💆','Spa Evening','Relax with a Balinese spa']]},
+      {title:'Temples & Culture', events:[['8:00 AM','☕','Breakfast','Breakfast at the hotel'],['9:30 AM','🛕','Balinese Temple','Visit a beautiful local temple'],['12:30 PM','🍴','Local Lunch','Traditional Balinese dishes'],['2:30 PM','🎭','Cultural Experience','Discover Balinese traditions'],['6:30 PM','🍽','Dinner in Ubud','Relaxed evening dinner']]},
+      {title:'Uluwatu & Beach', events:[['8:00 AM','☕','Breakfast','Breakfast at the hotel'],['9:30 AM','🏖','Beach Morning','Relax by the coast'],['12:30 PM','🍴','Lunch by the Coast','Lunch with an ocean view'],['3:00 PM','🛕','Uluwatu Temple','Explore the cliffside temple'],['6:00 PM','🌅','Sunset','Watch the sunset over the ocean'],['7:30 PM','🍽','Sunset Dinner','Final island dinner']]},
+      {title:'Slow Morning & Departure', events:[['9:00 AM','☕','Breakfast','Slow final breakfast'],['10:00 AM','🏊','Pool / Café','Relax at the hotel'],['11:30 AM','🛍','Shopping','Last-minute shopping'],['1:00 PM','🏨','Hotel Check-out','Collect luggage'],['2:00 PM','🚕','Airport Transfer','Transfer to the airport'],['4:30 PM','✈','Departure','End of your Bali journey']]}
+    ]
+  }
+};
+
+const place = (new URLSearchParams(location.search).get('place') || 'singapore').toLowerCase();
+const plan = plans[place] || plans.singapore;
+let editing = null;
+
+function render() {
+  document.getElementById('bookingContent').innerHTML = `
+    <section class="booking-hero">
+      <div class="booking-hero-image" style="background-image:url('${plan.image}')"></div>
+      <div class="booking-hero-shade"></div>
+      <div class="booking-hero-content">
+        <a href="destination.html?place=${place}" class="booking-back">← Back to ${plan.name}</a>
+        <span class="eyebrow">READY-MADE JOURNI PLAN</span>
+        <h1>${plan.name}</h1>
+        <p>${plan.duration} · ${plan.country}</p>
+      </div>
+    </section>
+
+    <section class="booking-main">
+      <div class="booking-heading">
+        <div>
+          <span class="eyebrow dark">USE THIS ITINERARY</span>
+          <h2>Your ${plan.name} <em>Travel Plan</em></h2>
+          <p>This is the same 5 Days / 4 Nights itinerary you saw on the destination page. Edit anything you want before booking.</p>
+        </div>
+        <div class="booking-summary"><strong>${plan.duration}</strong><span id="bookingTravelerSummary">2 Travelers</span><span id="bookingDateSummary">Select your dates above</span><span>${plan.budget}</span></div>
+      </div>
+
+      <div class="trip-details-card">
+        <div>
+          <span class="eyebrow dark">YOUR TRIP DETAILS</span>
+          <h3>Tell us about your trip</h3>
+          <p>This ready-made plan is fixed at <strong>5 Days / 4 Nights</strong>. Enter your travelers and departure date for this 5 Days / 4 Nights plan.</p>
+        </div>
+        <div class="trip-details-form">
+          <label>
+            <span>TRAVELERS</span>
+            <div class="number-control">
+              <button type="button" onclick="changeTravelers(-1)">−</button>
+              <strong id="travelerCount">2</strong>
+              <button type="button" onclick="changeTravelers(1)">+</button>
+            </div>
+          </label>
+          <label>
+            <span>DEPARTURE DATE</span>
+            <input id="startDate" type="date" onchange="updateReturnDate()">
+          </label>
+          <label>
+            <span>RETURN DATE · 4 NIGHTS</span>
+            <input id="endDate" type="date" readonly>
+          </label>
+          
+        </div>
+        <p class="trip-form-error" id="tripFormError"></p>
+      </div>
+
+      <div class="editable-note" id="editableNote">✎ <strong>Fully editable before booking</strong><span>Change any activity, location or detail. Your changes will stay on this plan.</span></div>
+
+      <div class="full-plan-list" id="fullPlanList">
+        ${plan.days.map((day,di)=>`<section class="full-plan-day">
+          <div class="full-day-header"><div>${di+1}</div><div><span>DAY ${di+1}</span><h3>${day.title}</h3></div></div>
+          <div class="full-event-list">
+            ${day.events.map((e,ei)=>`<div class="full-event"><time>${e[0]}</time><span class="full-event-icon">${e[1]}</span><div><strong>${e[2]}</strong><p>${e[3]}</p></div><button class="edit-event-btn" onclick="openEdit(${di},${ei})">Edit</button></div>`).join('')}
+          </div>
+        </section>`).join('')}
+      </div>
+
+      <div class="book-panel">
+        <div><span class="eyebrow dark">ALMOST THERE</span><h3>Ready to make this trip yours?</h3><p>Your edits are applied before anything is booked.</p></div>
+        <button class="confirm-book-btn" onclick="confirmBooking()">Confirm & Book This Plan →</button>
+      </div>
+    </section>`;
+}
+
+function openEdit(dayIndex,eventIndex){
+  editing={dayIndex,eventIndex};
+  const e=plan.days[dayIndex].events[eventIndex];
+  document.getElementById('editTitle').value=e[2];
+  document.getElementById('editDescription').value=e[3];
+  document.getElementById('editModal').classList.add('show');
+  document.getElementById('editModal').setAttribute('aria-hidden','false');
+  document.getElementById('editTitle').focus();
+}
+function closeEdit(){ document.getElementById('editModal').classList.remove('show'); document.getElementById('editModal').setAttribute('aria-hidden','true'); editing=null; }
+function saveEdit(){
+  if(!editing) return;
+  const title=document.getElementById('editTitle').value.trim() || 'New activity';
+  const desc=document.getElementById('editDescription').value.trim() || 'Personalised activity added by you.';
+  const e=plan.days[editing.dayIndex].events[editing.eventIndex];
+  e[2]=title; e[3]=desc; closeEdit(); render(); restorePlanView(); showToast('Your itinerary was updated ✓');
+}
+function confirmBooking(){
+  showToast('Your plan is ready to book! ✓');
+  setTimeout(()=>alert('Booking confirmed for your personalised ' + plan.name + ' itinerary!'),450);
+}
+function showToast(message){ const toast=document.getElementById('bookingToast'); toast.textContent=message; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2400); }
+
+let travelerCount = 2;
+function changeTravelers(amount){
+  travelerCount = Math.max(1, Math.min(20, travelerCount + amount));
+  document.getElementById('travelerCount').textContent = travelerCount;
+}
+function updateReturnDate(){
+  const start=document.getElementById('startDate').value;
+  const end=document.getElementById('endDate');
+  if(!start){ end.value=''; return; }
+  const d=new Date(start+'T00:00:00');
+  d.setDate(d.getDate()+4);
+  end.value=d.toISOString().slice(0,10);
+  document.getElementById('tripFormError').textContent='';
+  const summary=document.getElementById('bookingDateSummary');
+  if(summary && end.value) summary.textContent=formatDate(start)+' → '+formatDate(end.value);
+  const ts=document.getElementById('bookingTravelerSummary');
+  if(ts) ts.textContent=travelerCount+(travelerCount===1?' Traveler':' Travelers');
+}
+function startTripPlan(){
+  const start=document.getElementById('startDate').value;
+  const error=document.getElementById('tripFormError');
+  if(!start){ error.textContent='Please select your departure date.'; return; }
+  updateReturnDate();
+  const end=document.getElementById('endDate').value;
+  if(!end){ error.textContent='Please select a valid departure date.'; return; }
+  const startD=new Date(start+'T00:00:00');
+  const endD=new Date(end+'T00:00:00');
+  const nights=Math.round((endD-startD)/86400000);
+  if(nights!==4){ error.textContent='This itinerary is fixed at 5 Days / 4 Nights. Your return date must be exactly 4 nights after departure.'; return; }
+
+  const travelerSummary=document.getElementById('bookingTravelerSummary');
+  const dateSummary=document.getElementById('bookingDateSummary');
+  const note=document.getElementById('editableNote');
+  const planList=document.getElementById('fullPlanList');
+  const bookPanel=document.querySelector('.book-panel');
+
+  travelerSummary.textContent=travelerCount+(travelerCount===1?' Traveler':' Travelers');
+  dateSummary.textContent=formatDate(start)+' → '+formatDate(end);
+  note.classList.remove('plan-hidden');
+  planList.classList.remove('plan-hidden');
+  if(bookPanel) bookPanel.classList.remove('plan-hidden');
+  error.textContent='';
+
+  requestAnimationFrame(()=>{
+    planList.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+function formatDate(value){
+  const d=new Date(value+'T00:00:00');
+  return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});
+}
+
+function restorePlanView(){
+  const start=document.getElementById('startDate');
+  if(!start || !start.value) return;
+  const end=document.getElementById('endDate');
+  const note=document.getElementById('editableNote');
+  const list=document.getElementById('fullPlanList');
+  const panel=document.querySelector('.book-panel');
+  document.getElementById('bookingTravelerSummary').textContent=travelerCount+(travelerCount===1?' Traveler':' Travelers');
+  document.getElementById('bookingDateSummary').textContent=formatDate(start.value)+' → '+formatDate(end.value);
+  note.classList.remove('plan-hidden');
+  list.classList.remove('plan-hidden');
+  if(panel) panel.classList.remove('plan-hidden');
+}
+
+render();
+</script>
+</body>
+</html>

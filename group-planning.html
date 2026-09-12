@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journi | Plan With Your Group</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ============================================================
+     GROUP PLANNING PAGE — page-specific styles
+     (shared tokens/vars come from style.css :root)
+     ============================================================ */
+  .group-hero { padding: 90px 0 10px; }
+  .group-hero h1 { font-family: var(--display); font-size: clamp(40px,5vw,58px); line-height: 1.08; }
+  .group-hero p { max-width: 640px; color: var(--text-muted); margin-top: 14px; line-height: 1.65; }
+
+  .group-tabs { position: sticky; top: 84px; z-index: 20; background: var(--sand); display: flex; gap: 8px; overflow-x: auto; padding: 18px 0; border-bottom: 1px solid #e4dbce; }
+  .group-tab { flex: 0 0 auto; border: 1px solid #d6cfc2; background: #fffdfa; color: var(--navy); padding: 11px 18px; border-radius: 999px; font-weight: 800; font-size: 13.5px; white-space: nowrap; }
+  .group-tab .tab-num { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #e5e0d5; color: var(--navy); font-size: 11px; margin-right: 8px; }
+  .group-tab.active { background: var(--navy); border-color: var(--navy); color: white; }
+  .group-tab.active .tab-num { background: var(--gold); color: var(--navy); }
+
+  .group-panel { display: none; padding: 40px 0 90px; }
+  .group-panel.active { display: block; }
+
+  .gcard { background: #fffdfa; border: 1px solid #e4dbce; border-radius: 22px; padding: 32px; box-shadow: 0 10px 30px rgba(15,31,61,.05); }
+  .gcard + .gcard { margin-top: 22px; }
+  .gcard h3 { font-family: var(--display); font-size: 24px; margin-bottom: 6px; }
+  .gcard .gcard-sub { color: var(--text-muted); font-size: 14px; margin-bottom: 22px; }
+
+  /* ---- SETUP ---- */
+  .setup-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 22px; }
+  .invite-row { display: flex; gap: 12px; align-items: center; background: var(--sand); border: 1px dashed #c9be aa; border: 1px dashed #c9beaa; border-radius: 15px; padding: 14px 16px; margin-bottom: 18px; }
+  .invite-row code { flex: 1; font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--navy); }
+  .invite-row button { border: 0; background: var(--navy); color: white; padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 13px; }
+  .member-list { display: grid; gap: 10px; }
+  .member-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #eae3d6; border-radius: 14px; background: white; }
+  .member-row .m-avatar { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: white; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+  .member-row .m-name { font-weight: 700; font-size: 14.5px; }
+  .member-row .m-role { margin-left: auto; font-size: 11.5px; font-weight: 800; padding: 5px 10px; border-radius: 999px; background: var(--sand); color: var(--text-muted); }
+  .member-row .m-role.organizer { background: rgba(201,168,76,.2); color: #8a6c1f; }
+  .add-member-row { display: flex; gap: 10px; margin-top: 14px; }
+  .add-member-row input { flex: 1; padding: 12px 14px; border: 1px solid #cfc8bc; border-radius: 12px; outline-color: var(--gold); }
+  .add-member-row button { border: 0; background: var(--sage); color: white; padding: 0 18px; border-radius: 12px; font-weight: 800; }
+  .trip-meta-form { display: grid; gap: 14px; }
+  .trip-meta-form label { font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: #687587; }
+  .trip-meta-form input, .trip-meta-form select { width: 100%; margin-top: 6px; padding: 12px 14px; border: 1px solid #cfc8bc; border-radius: 12px; background: white; outline-color: var(--gold); font-size: 14.5px; color: var(--navy); }
+
+  /* ---- SWIPE / MATCH ---- */
+  .swipe-wrap { display: grid; grid-template-columns: 1fr; justify-items: center; }
+  .swipe-stage { position: relative; width: min(420px, 100%); height: 340px; margin-bottom: 22px; }
+  .swipe-card { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 40px rgba(15,31,61,.18); background-size: cover; background-position: center; transition: transform .35s ease, opacity .35s ease; }
+  .swipe-card .sc-shade { position: absolute; inset: 0; background: linear-gradient(0deg, rgba(8,20,38,.88), rgba(8,20,38,.05) 60%); }
+  .swipe-card .sc-content { position: absolute; bottom: 0; padding: 22px; color: white; }
+  .swipe-card .sc-content span { font-size: 11.5px; letter-spacing: 2px; color: var(--gold-light); font-weight: 800; }
+  .swipe-card .sc-content h4 { font-family: var(--display); font-size: 26px; margin: 6px 0; }
+  .swipe-card .sc-content p { font-size: 13.5px; color: #e6e9ed; }
+  .swipe-card.leaving-like { transform: translateX(140%) rotate(18deg); opacity: 0; }
+  .swipe-card.leaving-nope { transform: translateX(-140%) rotate(-18deg); opacity: 0; }
+  .swipe-actions { display: flex; gap: 18px; }
+  .swipe-btn { width: 62px; height: 62px; border-radius: 50%; border: 2px solid #ddd6ca; background: white; font-size: 24px; display: grid; place-items: center; box-shadow: 0 8px 20px rgba(15,31,61,.1); }
+  .swipe-btn.nope { color: var(--terracotta); }
+  .swipe-btn.like { color: var(--sage); }
+  .swipe-progress { margin-top: 16px; font-size: 12.5px; color: var(--text-muted); }
+  .match-results { margin-top: 30px; display: none; }
+  .match-results.show { display: block; }
+  .match-item { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #eae3d6; border-radius: 14px; background: white; margin-bottom: 10px; }
+  .match-item .mi-name { font-weight: 800; }
+  .match-item .mi-who { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+  .match-bar-wrap { width: 140px; height: 8px; background: #e5e0d5; border-radius: 999px; overflow: hidden; }
+  .match-bar { height: 100%; background: var(--sage); }
+  .match-item.split-day .match-bar { background: var(--gold); }
+  .match-pct { font-weight: 900; font-size: 13px; margin-left: 10px; width: 40px; text-align: right; display: inline-block; }
+
+  /* ---- COLLAB BOARD ---- */
+  .presence-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+  .presence-avatars { display: flex; }
+  .presence-avatars .m-avatar { width: 34px; height: 34px; font-size: 12px; border: 2px solid #fffdfa; margin-left: -10px; }
+  .presence-avatars .m-avatar:first-child { margin-left: 0; }
+  .presence-label { font-size: 13px; color: var(--text-muted); }
+  .presence-label b { color: var(--sage); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage); display: inline-block; margin-right: 6px; animation: pulse-dot 1.6s infinite; }
+  @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  .collab-day { margin-bottom: 26px; }
+  .collab-day-title { font-family: var(--display); font-size: 19px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+  .collab-item { border: 1px solid #eae3d6; border-radius: 16px; background: white; padding: 16px 18px; margin-bottom: 12px; }
+  .collab-item-top { display: flex; align-items: flex-start; gap: 12px; }
+  .collab-item-top strong { display: block; font-size: 15.5px; }
+  .collab-item-top time { font-size: 12px; color: #7b8794; font-family: monospace; }
+  .collab-item .editing-badge { margin-left: auto; font-size: 11px; font-weight: 800; color: #8a6c1f; background: rgba(201,168,76,.18); padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+  .collab-reactions { display: flex; gap: 8px; margin-top: 12px; }
+  .collab-reactions button { border: 1px solid #e4dbce; background: var(--sand); border-radius: 999px; padding: 5px 11px; font-size: 12.5px; }
+  .collab-reactions button.active { background: var(--navy); color: white; border-color: var(--navy); }
+  .collab-comments { margin-top: 12px; border-top: 1px dashed #e4dbce; padding-top: 10px; }
+  .collab-comment { display: flex; gap: 8px; font-size: 13px; margin-bottom: 6px; }
+  .collab-comment b { color: var(--navy); }
+  .collab-comment span { color: #566073; }
+  .comment-input-row { display: flex; gap: 8px; margin-top: 8px; }
+  .comment-input-row input { flex: 1; padding: 9px 12px; border: 1px solid #cfc8bc; border-radius: 999px; font-size: 13px; outline-color: var(--gold); }
+  .comment-input-row button { border: 0; background: var(--navy); color: white; padding: 0 16px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+
+  .poll-card { border: 1px solid #eae3d6; background: white; border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
+  .poll-card .poll-q { font-weight: 800; margin-bottom: 4px; }
+  .poll-card .poll-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  .poll-option { position: relative; border: 1px solid #e4dbce; border-radius: 12px; padding: 10px 14px; margin-bottom: 8px; cursor: pointer; overflow: hidden; background: var(--sand); }
+  .poll-option .poll-fill { position: absolute; inset: 0; background: rgba(201,168,76,.28); z-index: 0; transition: width .4s ease; }
+  .poll-option .poll-label { position: relative; z-index: 1; display: flex; justify-content: space-between; font-size: 13.5px; font-weight: 700; color: var(--navy); }
+  .poll-option.voted { border-color: var(--gold); }
+
+  /* ---- COST SPLITTING ---- */
+  .split-summary { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+  .split-stat { background: var(--sand); border-radius: 16px; padding: 18px; text-align: center; }
+  .split-stat strong { display: block; font-family: var(--display); font-size: 26px; }
+  .split-stat span { font-size: 12px; color: var(--text-muted); }
+  .expense-form { display: grid; grid-template-columns: 1.3fr .8fr .9fr; gap: 12px; margin-bottom: 10px; }
+  .expense-form input, .expense-form select { padding: 12px 14px; border: 1px solid #cfc8bc; border-radius: 12px; outline-color: var(--gold); font-size: 14px; }
+  .split-participants { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .split-participants label { display: flex; align-items: center; gap: 6px; border: 1px solid #e4dbce; padding: 7px 12px; border-radius: 999px; font-size: 12.5px; background: white; }
+  .expense-list { display: grid; gap: 10px; margin-top: 8px; }
+  .expense-row { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; padding: 13px 16px; border: 1px solid #eae3d6; border-radius: 14px; background: white; }
+  .expense-row .e-icon { width: 40px; height: 40px; border-radius: 12px; background: var(--navy); color: var(--gold-light); display: grid; place-items: center; font-size: 18px; }
+  .expense-row strong { display: block; font-size: 14.5px; }
+  .expense-row small { color: var(--text-muted); }
+  .expense-row .e-amt { font-weight: 900; color: #a9852d; font-size: 16px; }
+
+  .balance-list, .settle-list { display: grid; gap: 10px; }
+  .balance-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #eae3d6; border-radius: 14px; background: white; }
+  .balance-row .b-amt { margin-left: auto; font-weight: 900; }
+  .balance-row .b-amt.pos { color: var(--sage); }
+  .balance-row .b-amt.neg { color: var(--terracotta); }
+  .settle-row { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border: 1px solid #eae3d6; border-radius: 14px; background: white; }
+  .settle-row .arrow { color: var(--gold); font-weight: 900; }
+  .settle-row .s-amt { margin-left: auto; font-weight: 900; }
+  .settle-row button { border: 0; background: var(--sage); color: white; padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+  .settle-row.settled { opacity: .45; }
+  .settle-row.settled button { background: #b6bcc4; }
+  .wallet-box { display: flex; align-items: center; gap: 24px; background: var(--navy); color: white; border-radius: 18px; padding: 22px 26px; margin-top: 20px; }
+  .wallet-box .w-stat strong { display: block; font-family: var(--display); font-size: 24px; }
+  .wallet-box .w-stat span { font-size: 11.5px; color: #b8c0cf; }
+  .wallet-box button { margin-left: auto; }
+
+  /* ---- DISRUPTION ---- */
+  .disrupt-banner { background: #fff3d9; border: 1px solid #e1c16d; color: #745211; border-radius: 16px; padding: 18px 22px; margin-bottom: 22px; }
+  .disrupt-banner strong { display: block; margin-bottom: 4px; }
+  .subgroup-card { border: 1px solid #eae3d6; border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; background: white; }
+  .subgroup-card .sg-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .subgroup-card .sg-top strong { font-size: 15px; }
+  .subgroup-card .sg-impact { font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-left: auto; }
+  .sg-impact.low { background: rgba(107,143,113,.18); color: #3f6a48; }
+  .sg-impact.high { background: rgba(196,99,58,.18); color: #9a4423; }
+  .sg-opt-row { display: flex; gap: 10px; margin-top: 10px; }
+  .sg-opt-row button { flex: 1; border: 1px solid #cfc8bc; background: white; padding: 9px; border-radius: 999px; font-size: 12.5px; font-weight: 800; }
+  .sg-opt-row button.chosen { background: var(--navy); color: white; border-color: var(--navy); }
+
+  /* ---- RECAP ---- */
+  .recap-hero { text-align: center; background: var(--navy); color: white; border-radius: 26px; padding: 44px 30px; margin-bottom: 26px; }
+  .recap-hero h3 { font-family: var(--display); font-size: 30px; margin-bottom: 8px; }
+  .recap-hero p { color: #c3cad5; }
+  .recap-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 26px; }
+  .recap-stat { background: var(--sand); border-radius: 16px; padding: 20px; text-align: center; }
+  .recap-stat strong { display: block; font-family: var(--display); font-size: 28px; }
+  .recap-stat span { font-size: 11.5px; color: var(--text-muted); }
+  .badge-row { display: flex; flex-wrap: wrap; gap: 12px; }
+  .badge { display: flex; align-items: center; gap: 8px; background: white; border: 1px solid #eae3d6; border-radius: 999px; padding: 9px 16px; font-size: 13px; font-weight: 700; }
+  .badge .b-emoji { font-size: 17px; }
+
+  @media (max-width: 900px) {
+    .setup-grid, .split-summary, .recap-stats { grid-template-columns: 1fr; }
+    .expense-form { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <a href="index.html#home" class="brand"><img src="images/logo.png" alt="Journi logo" class="brand-logo-img"></a>
+  <nav class="nav-links">
+    <a href="index.html#home">Home</a>
+    <a href="index.html#destinations">Destinations</a>
+    <a href="index.html#planner">Plan a Trip</a>
+    <a href="ai-planner.html">AI Planner</a>
+    <a href="route-builder.html">Route Builder</a>
+    <a class="active" href="group-planning.html">Plan With Friends</a>
+    <a href="index.html#reviews">Reviews</a>
+  </nav>
+</header>
+
+<main>
+  <section class="section group-hero">
+    <p class="eyebrow dark">TRAVEL TOGETHER</p>
+    <h1>Plan the trip <em>as a group</em>, not a group chat.</h1>
+    <p>Invite your travel crew, match on what everyone actually wants to do, edit the itinerary live, and split every cost fairly — all in one board.</p>
+  </section>
+
+  <section class="section" style="padding-top:0;">
+    <div class="group-tabs" id="groupTabs">
+      <button class="group-tab active" data-tab="setup"><span class="tab-num">1</span>Group Setup</button>
+      <button class="group-tab" data-tab="vote"><span class="tab-num">2</span>Match Preferences</button>
+      <button class="group-tab" data-tab="collab"><span class="tab-num">3</span>Live Itinerary</button>
+      <button class="group-tab" data-tab="split"><span class="tab-num">4</span>Split Costs</button>
+      <button class="group-tab" data-tab="disrupt"><span class="tab-num">5</span>Handle Changes</button>
+      <button class="group-tab" data-tab="recap"><span class="tab-num">6</span>Trip Recap</button>
+    </div>
+
+    <!-- ===================== 1. GROUP SETUP ===================== -->
+    <div class="group-panel active" data-panel="setup">
+      <div class="setup-grid">
+        <div class="gcard">
+          <h3>Invite your group</h3>
+          <p class="gcard-sub">Share the code or link — no account setup needed to join.</p>
+          <div class="invite-row">
+            <code id="inviteCode">JOURNI-BALI-482</code>
+            <button onclick="copyInvite()">Copy Link</button>
+          </div>
+          <div class="member-list" id="memberList"></div>
+          <div class="add-member-row">
+            <input id="newMemberName" type="text" placeholder="Add a member by name...">
+            <button onclick="addMember()">Add</button>
+          </div>
+        </div>
+
+        <div class="gcard">
+          <h3>Trip basics</h3>
+          <p class="gcard-sub">Set the shared details everyone will plan around.</p>
+          <div class="trip-meta-form">
+            <div>
+              <label>Destination</label>
+              <input id="tripDestination" type="text" value="Bali, Indonesia">
+            </div>
+            <div>
+              <label>Dates</label>
+              <input id="tripDates" type="text" value="Dec 12 – Dec 17">
+            </div>
+            <div>
+              <label>Decision style</label>
+              <select id="decisionStyle">
+                <option>Majority vote</option>
+                <option>Organizer decides ties</option>
+                <option>Everyone must agree</option>
+              </select>
+            </div>
+            <div>
+              <label>Group budget target</label>
+              <input id="groupBudgetTarget" type="text" value="$4,500 total">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 2. PREFERENCE MATCHING ===================== -->
+    <div class="group-panel" data-panel="vote">
+      <div class="gcard">
+        <h3>Swipe to match on activities</h3>
+        <p class="gcard-sub">Swipe right on things you're keen for, left to skip. Journi blends everyone's swipes into a group match score.</p>
+        <div class="swipe-wrap">
+          <div class="swipe-stage" id="swipeStage"></div>
+          <div class="swipe-actions">
+            <button class="swipe-btn nope" onclick="swipeCard('nope')">✕</button>
+            <button class="swipe-btn like" onclick="swipeCard('like')">♥</button>
+          </div>
+          <div class="swipe-progress" id="swipeProgress">Card 1 of 6 · You're swiping for Camille</div>
+        </div>
+        <div class="match-results" id="matchResults">
+          <h3 style="margin-top:30px;">Group match results</h3>
+          <p class="gcard-sub">Based on everyone's swipes so far.</p>
+          <div id="matchList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 3. LIVE COLLAB ITINERARY ===================== -->
+    <div class="group-panel" data-panel="collab">
+      <div class="gcard">
+        <div class="presence-row">
+          <div class="presence-avatars" id="presenceAvatars"></div>
+          <div class="presence-label"><span class="live-dot"></span><b id="presenceCount">3</b> people viewing this itinerary right now</div>
+        </div>
+
+        <div class="collab-day">
+          <div class="collab-day-title"><span class="dot" style="width:9px;height:9px;border-radius:50%;background:var(--gold);display:inline-block;"></span> Day 2 · Ubud & Rice Terraces</div>
+
+          <div class="collab-item" id="collabItem1">
+            <div class="collab-item-top">
+              <div>
+                <strong>Tegallalang Rice Terraces</strong>
+                <time>9:30 AM</time>
+              </div>
+              <div class="editing-badge" id="editBadge1">Rafael is editing…</div>
+            </div>
+            <div class="collab-reactions">
+              <button onclick="toggleReaction(this,'👍 3')">👍 3</button>
+              <button onclick="toggleReaction(this,'😍 2')">😍 2</button>
+              <button onclick="addQuickReaction(this)">+ react</button>
+            </div>
+            <div class="collab-comments" id="comments1">
+              <div class="collab-comment"><b>Aiko:</b> <span>can we go earlier to beat the tour buses?</span></div>
+            </div>
+            <div class="comment-input-row">
+              <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')postComment(this,'comments1')">
+              <button onclick="postComment(this.previousElementSibling,'comments1')">Send</button>
+            </div>
+          </div>
+
+          <div class="collab-item" id="collabItem2">
+            <div class="collab-item-top">
+              <div>
+                <strong>Ubud Art Market</strong>
+                <time>1:00 PM</time>
+              </div>
+            </div>
+            <div class="collab-reactions">
+              <button onclick="toggleReaction(this,'👍 1')">👍 1</button>
+              <button onclick="addQuickReaction(this)">+ react</button>
+            </div>
+            <div class="collab-comments" id="comments2"></div>
+            <div class="comment-input-row">
+              <input type="text" placeholder="Add a comment..." onkeydown="if(event.key==='Enter')postComment(this,'comments2')">
+              <button onclick="postComment(this.previousElementSibling,'comments2')">Send</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 style="margin-top:10px;">Open polls</h3>
+        <p class="gcard-sub">Unresolved decisions the group is voting on.</p>
+
+        <div class="poll-card">
+          <div class="poll-q">Where should we stay in Ubud?</div>
+          <div class="poll-meta">3 of 5 have voted · closes in 6 hours</div>
+          <div id="pollOptions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 4. COST SPLITTING ===================== -->
+    <div class="group-panel" data-panel="split">
+      <div class="gcard">
+        <h3>Group expenses</h3>
+        <p class="gcard-sub">Log a cost, choose who it's split between, and Journi keeps balances updated live.</p>
+
+        <div class="split-summary">
+          <div class="split-stat"><strong id="totalSpentStat">$0</strong><span>Total group spend</span></div>
+          <div class="split-stat"><strong id="perPersonStat">$0</strong><span>Average per person</span></div>
+          <div class="split-stat"><strong id="txCountStat">0</strong><span>Settle-up transactions needed</span></div>
+        </div>
+
+        <div class="expense-form">
+          <input id="expTitle" type="text" placeholder="What was it for? (e.g. Group dinner)">
+          <input id="expAmount" type="number" placeholder="Amount ($)">
+          <select id="expPaidBy"></select>
+        </div>
+        <div class="split-participants" id="expParticipants"></div>
+        <button class="gold-btn" onclick="addExpense()">Add Expense</button>
+
+        <div class="expense-list" id="expenseList" style="margin-top:22px;"></div>
+      </div>
+
+      <div class="gcard">
+        <h3>Who owes what</h3>
+        <p class="gcard-sub">Net balance per person across all logged expenses.</p>
+        <div class="balance-list" id="balanceList"></div>
+      </div>
+
+      <div class="gcard">
+        <h3>Settle up (minimum transactions)</h3>
+        <p class="gcard-sub">Journi simplifies debts so the fewest payments settle everyone up.</p>
+        <div class="settle-list" id="settleList"></div>
+
+        <div class="wallet-box">
+          <div class="w-stat"><strong id="walletTotal">$180</strong><span>Group cash pot</span></div>
+          <div class="w-stat"><strong id="walletSpent">$95</strong><span>Spent from pot</span></div>
+          <button class="gold-btn" onclick="contributeWallet()">+ Contribute $20</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================== 5. GROUP-AWARE DISRUPTION ===================== -->
+    <div class="group-panel" data-panel="disrupt">
+      <div class="gcard">
+        <h3>Handle a change together</h3>
+        <p class="gcard-sub">Simulate a disruption and see how Journi adapts the plan per subgroup instead of forcing one blanket change.</p>
+        <button class="delay-btn" onclick="simulateGroupDelay()">⚠ Simulate: Flight delay +3 hours</button>
+
+        <div class="disrupt-banner hidden" id="groupDisruptBanner">
+          <strong>Inbound flight delayed 3 hours — arrival now 8:45 PM.</strong>
+          Journi checked each subgroup's plans and only the ones actually affected need a decision.
+        </div>
+
+        <div id="subgroupList" style="margin-top:22px;"></div>
+      </div>
+    </div>
+
+    <!-- ===================== 6. RECAP ===================== -->
+    <div class="group-panel" data-panel="recap">
+      <div class="recap-hero">
+        <h3>Bali, Indonesia · Dec 12–17</h3>
+        <p>5 days · 4 travelers · planned together on Journi</p>
+      </div>
+      <div class="recap-stats">
+        <div class="recap-stat"><strong id="recapActivities">14</strong><span>Activities planned</span></div>
+        <div class="recap-stat"><strong id="recapSpend">$0</strong><span>Total group spend</span></div>
+        <div class="recap-stat"><strong id="recapVotes">27</strong><span>Group votes cast</span></div>
+        <div class="recap-stat"><strong id="recapSettled">0</strong><span>Payments settled</span></div>
+      </div>
+      <div class="gcard">
+        <h3>Group badges earned</h3>
+        <p class="gcard-sub">A little something for the crew that planned it right.</p>
+        <div class="badge-row">
+          <div class="badge"><span class="b-emoji">🗳️</span> Decisive Crew</div>
+          <div class="badge"><span class="b-emoji">💸</span> Split Evenly</div>
+          <div class="badge"><span class="b-emoji">🌊</span> Beach & Culture Balance</div>
+          <div class="badge"><span class="b-emoji">⚡</span> Handled a Delay Like Pros</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ============================================================
+     DATA MODEL
+     ============================================================ */
+  const colors = ['#c9a84c','#4a9ebb','#6b8f71','#c4633a','#8569a8'];
+  let members = [
+    { id: 'm1', name: 'You', role: 'organizer' },
+    { id: 'm2', name: 'Camille', role: 'member' },
+    { id: 'm3', name: 'Rafael', role: 'member' },
+    { id: 'm4', name: 'Aiko', role: 'member' }
+  ];
+
+  function initials(name) { return name.trim().split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase(); }
+  function colorFor(id) { let sum = 0; for (const c of id) sum += c.charCodeAt(0); return colors[sum % colors.length]; }
+
+  function renderMembers() {
+    document.getElementById('memberList').innerHTML = members.map(m => `
+      <div class="member-row">
+        <div class="m-avatar" style="background:${colorFor(m.id)}">${initials(m.name)}</div>
+        <div class="m-name">${m.name}</div>
+        <div class="m-role ${m.role === 'organizer' ? 'organizer' : ''}">${m.role === 'organizer' ? 'Organizer' : 'Member'}</div>
+      </div>
+    `).join('');
+    document.getElementById('presenceAvatars').innerHTML = members.slice(0,4).map(m =>
+      `<div class="m-avatar" style="background:${colorFor(m.id)}">${initials(m.name)}</div>`).join('');
+    const paidBySel = document.getElementById('expPaidBy');
+    if (paidBySel) paidBySel.innerHTML = members.map(m => `<option value="${m.id}">${m.name} paid</option>`).join('');
+    const participantsBox = document.getElementById('expParticipants');
+    if (participantsBox) participantsBox.innerHTML = members.map(m =>
+      `<label><input type="checkbox" value="${m.id}" checked> ${m.name}</label>`).join('');
+  }
+
+  function addMember() {
+    const input = document.getElementById('newMemberName');
+    const name = input.value.trim();
+    if (!name) return;
+    members.push({ id: 'm' + (members.length + 1) + Date.now(), name, role: 'member' });
+    input.value = '';
+    renderMembers();
+    showToast(name + ' added to the group.');
+  }
+
+  function copyInvite() {
+    showToast('Invite link copied — share it with your group.');
+  }
+
+  /* ============================================================
+     TAB NAVIGATION
+     ============================================================ */
+  document.getElementById('groupTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.group-tab');
+    if (!btn) return;
+    document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.group-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelector('.group-panel[data-panel="' + btn.dataset.tab + '"]').classList.add('active');
+    window.scrollTo({ top: document.getElementById('groupTabs').offsetTop - 90, behavior: 'smooth' });
+  });
+
+  /* ============================================================
+     SWIPE-TO-MATCH PREFERENCES
+     ============================================================ */
+  const swipeDeck = [
+    { name: 'Sunrise Volcano Trek', tag: 'ADVENTURE', desc: 'Early start, big views, not for late risers.', img: 'images/bali.png' },
+    { name: 'Uluwatu Sunset & Kecak Dance', tag: 'CULTURE', desc: 'Cliffside temple, traditional fire dance at dusk.', img: 'images/bali.png' },
+    { name: 'Seminyak Beach Clubs', tag: 'NIGHTLIFE', desc: 'Loungers, cocktails, sunset DJ sets.', img: 'images/bali.png' },
+    { name: 'Ubud Cooking Class', tag: 'FOOD', desc: 'Market visit + hands-on Balinese cooking.', img: 'images/bali.png' },
+    { name: 'Nusa Penida Day Trip', tag: 'NATURE', desc: 'Boat out to cliffs and turquoise water.', img: 'images/bali.png' },
+    { name: 'Spa & Slow Morning', tag: 'RELAX', desc: 'A do-nothing morning between busy days.', img: 'images/bali.png' }
+  ];
+  // simulated votes already cast by other members, per card index
+  const otherVotes = [
+    { like: ['Camille','Aiko'], nope: ['Rafael'] },
+    { like: ['Camille','Rafael','Aiko'], nope: [] },
+    { like: ['Rafael'], nope: ['Camille','Aiko'] },
+    { like: ['Camille','Rafael','Aiko'], nope: [] },
+    { like: ['Camille','Aiko'], nope: ['Rafael'] },
+    { like: ['Aiko'], nope: ['Camille','Rafael'] }
+  ];
+  let swipeIndex = 0;
+  const myVotes = [];
+
+  function renderSwipeStage() {
+    const stage = document.getElementById('swipeStage');
+    if (swipeIndex >= swipeDeck.length) {
+      stage.innerHTML = `<div style="display:grid;place-items:center;height:100%;text-align:center;color:var(--text-muted);">
+        <div><div style="font-size:34px;margin-bottom:10px;">✓</div>All swipes in — see the group match below.</div></div>`;
+      document.querySelector('.swipe-actions').style.display = 'none';
+      document.getElementById('swipeProgress').textContent = 'Done — 6 of 6 cards swiped';
+      showMatchResults();
+      return;
+    }
+    const card = swipeDeck[swipeIndex];
+    stage.innerHTML = `
+      <div class="swipe-card" id="activeSwipeCard" style="background-image:url('${card.img}')">
+        <div class="sc-shade"></div>
+        <div class="sc-content">
+          <span>${card.tag}</span>
+          <h4>${card.name}</h4>
+          <p>${card.desc}</p>
+        </div>
+      </div>`;
+    document.getElementById('swipeProgress').textContent = `Card ${swipeIndex + 1} of ${swipeDeck.length} · You're swiping for Camille's Bali trip`;
+  }
+
+  function swipeCard(direction) {
+    if (swipeIndex >= swipeDeck.length) return;
+    const el = document.getElementById('activeSwipeCard');
+    el.classList.add(direction === 'like' ? 'leaving-like' : 'leaving-nope');
+    myVotes.push(direction);
+    setTimeout(() => { swipeIndex++; renderSwipeStage(); }, 260);
+  }
+
+  function showMatchResults() {
+    const results = document.getElementById('matchResults');
+    results.classList.add('show');
+    const list = document.getElementById('matchList');
+    list.innerHTML = swipeDeck.map((card, i) => {
+      const likes = [...otherVotes[i].like];
+      if (myVotes[i] === 'like') likes.push('You');
+      const nopes = [...otherVotes[i].nope];
+      if (myVotes[i] === 'nope') nopes.push('You');
+      const total = likes.length + nopes.length;
+      const pct = Math.round((likes.length / total) * 100);
+      const splitDay = pct >= 40 && pct <= 60;
+      return `
+        <div class="match-item ${splitDay ? 'split-day' : ''}">
+          <div>
+            <div class="mi-name">${card.name}</div>
+            <div class="mi-who">${likes.length ? '👍 ' + likes.join(', ') : ''} ${nopes.length ? '· 👎 ' + nopes.join(', ') : ''}
+              ${splitDay ? '<br><b style="color:#8a6c1f;">Split opinion — consider a split-day option</b>' : ''}</div>
+          </div>
+          <div style="display:flex;align-items:center;">
+            <div class="match-bar-wrap"><div class="match-bar" style="width:${pct}%"></div></div>
+            <span class="match-pct">${pct}%</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  /* ============================================================
+     LIVE COLLAB — presence, reactions, comments, polls
+     ============================================================ */
+  function toggleReaction(btn) {
+    btn.classList.toggle('active');
+  }
+  function addQuickReaction(btn) {
+    const emojiSet = ['👏','🔥','🙌','😂','🎉'];
+    const emoji = emojiSet[Math.floor(Math.random() * emojiSet.length)];
+    const span = document.createElement('button');
+    span.textContent = emoji + ' 1';
+    btn.parentElement.insertBefore(span, btn);
+  }
+  function postComment(inputEl, listId) {
+    const val = inputEl.value.trim();
+    if (!val) return;
+    const list = document.getElementById(listId);
+    const row = document.createElement('div');
+    row.className = 'collab-comment';
+    row.innerHTML = `<b>You:</b> <span>${val}</span>`;
+    list.appendChild(row);
+    inputEl.value = '';
+    showToast('Comment posted to the group.');
+  }
+
+  // simulate a teammate "editing" indicator fading in/out
+  setInterval(() => {
+    const badge = document.getElementById('editBadge1');
+    if (!badge) return;
+    badge.style.display = badge.style.display === 'none' ? 'inline-block' : 'none';
+  }, 4000);
+
+  const pollData = [
+    { label: 'Boutique villa in central Ubud', votes: 2 },
+    { label: 'Rice-terrace-view eco stay', votes: 1 },
+    { label: 'Budget guesthouse, save for activities', votes: 0 }
+  ];
+  let myPollVote = null;
+  function renderPoll() {
+    const total = pollData.reduce((a, o) => a + o.votes, 0) || 1;
+    document.getElementById('pollOptions').innerHTML = pollData.map((o, i) => {
+      const pct = Math.round((o.votes / total) * 100);
+      return `<div class="poll-option ${myPollVote === i ? 'voted' : ''}" onclick="votePoll(${i})">
+        <div class="poll-fill" style="width:${pct}%"></div>
+        <div class="poll-label"><span>${o.label}</span><span>${o.votes} vote${o.votes === 1 ? '' : 's'} · ${pct}%</span></div>
+      </div>`;
+    }).join('');
+  }
+  function votePoll(i) {
+    if (myPollVote === i) return;
+    if (myPollVote !== null) pollData[myPollVote].votes--;
+    pollData[i].votes++;
+    myPollVote = i;
+    renderPoll();
+    showToast('Vote recorded.');
+  }
+
+  /* ============================================================
+     COST SPLITTING
+     ============================================================ */
+  let expenses = [
+    { title: 'Airbnb villa (4 nights)', amount: 640, paidBy: 'm1', participants: ['m1','m2','m3','m4'], icon: '🏠' },
+    { title: 'Airport transfer van', amount: 60, paidBy: 'm3', participants: ['m1','m2','m3','m4'], icon: '🚐' },
+    { title: 'Group dinner, Seminyak', amount: 128, paidBy: 'm2', participants: ['m1','m2','m3','m4'], icon: '🍽️' }
+  ];
+
+  function addExpense() {
+    const title = document.getElementById('expTitle').value.trim();
+    const amount = parseFloat(document.getElementById('expAmount').value);
+    const paidBy = document.getElementById('expPaidBy').value;
+    const participants = Array.from(document.querySelectorAll('#expParticipants input:checked')).map(c => c.value);
+    if (!title || !amount || participants.length === 0) { showToast('Add a title, amount, and at least one participant.'); return; }
+    expenses.push({ title, amount, paidBy, participants, icon: '💳' });
+    document.getElementById('expTitle').value = '';
+    document.getElementById('expAmount').value = '';
+    renderExpenses();
+    showToast('Expense added and split.');
+  }
+
+  function nameOf(id) { return members.find(m => m.id === id)?.name || id; }
+
+  function computeBalances() {
+    const balance = {};
+    members.forEach(m => balance[m.id] = 0);
+    expenses.forEach(e => {
+      const share = e.amount / e.participants.length;
+      balance[e.paidBy] = (balance[e.paidBy] || 0) + e.amount;
+      e.participants.forEach(p => balance[p] = (balance[p] || 0) - share);
+    });
+    return balance;
+  }
+
+  function simplifyDebts(balance) {
+    const creditors = [], debtors = [];
+    Object.entries(balance).forEach(([id, amt]) => {
+      if (amt > 0.5) creditors.push({ id, amt });
+      else if (amt < -0.5) debtors.push({ id, amt: -amt });
+    });
+    creditors.sort((a,b) => b.amt - a.amt);
+    debtors.sort((a,b) => b.amt - a.amt);
+    const tx = [];
+    let i = 0, j = 0;
+    while (i < debtors.length && j < creditors.length) {
+      const pay = Math.min(debtors[i].amt, creditors[j].amt);
+      tx.push({ from: debtors[i].id, to: creditors[j].id, amount: pay });
+      debtors[i].amt -= pay;
+      creditors[j].amt -= pay;
+      if (debtors[i].amt < 0.5) i++;
+      if (creditors[j].amt < 0.5) j++;
+    }
+    return tx;
+  }
+
+  function renderExpenses() {
+    document.getElementById('expenseList').innerHTML = expenses.map(e => `
+      <div class="expense-row">
+        <div class="e-icon">${e.icon}</div>
+        <div>
+          <strong>${e.title}</strong>
+          <small>${nameOf(e.paidBy)} paid · split ${e.participants.length} ways</small>
+        </div>
+        <div class="e-amt">$${e.amount.toLocaleString()}</div>
+      </div>`).join('');
+
+    const balance = computeBalances();
+    document.getElementById('balanceList').innerHTML = Object.entries(balance).map(([id, amt]) => `
+      <div class="balance-row">
+        <div class="m-avatar" style="background:${colorFor(id)};width:32px;height:32px;font-size:11px;">${initials(nameOf(id))}</div>
+        <div>${nameOf(id)}</div>
+        <div class="b-amt ${amt >= 0 ? 'pos' : 'neg'}">${amt >= 0 ? '+' : '-'}$${Math.abs(amt).toFixed(2)}</div>
+      </div>`).join('');
+
+    const tx = simplifyDebts(balance);
+    document.getElementById('settleList').innerHTML = tx.length ? tx.map((t, i) => `
+      <div class="settle-row" id="settleRow${i}">
+        <span>${nameOf(t.from)}</span><span class="arrow">→</span><span>${nameOf(t.to)}</span>
+        <span class="s-amt">$${t.amount.toFixed(2)}</span>
+        <button onclick="markSettled(${i})">Mark Paid</button>
+      </div>`).join('') : `<p style="color:var(--text-muted);font-size:14px;">Everyone's settled up.</p>`;
+
+    const total = expenses.reduce((a, e) => a + e.amount, 0);
+    document.getElementById('totalSpentStat').textContent = '$' + total.toLocaleString();
+    document.getElementById('perPersonStat').textContent = '$' + (total / members.length).toFixed(0);
+    document.getElementById('txCountStat').textContent = tx.length;
+    const recapSpend = document.getElementById('recapSpend');
+    if (recapSpend) recapSpend.textContent = '$' + total.toLocaleString();
+  }
+
+  function markSettled(i) {
+    const row = document.getElementById('settleRow' + i);
+    row.classList.add('settled');
+    row.querySelector('button').textContent = 'Paid ✓';
+    row.querySelector('button').disabled = true;
+    const el = document.getElementById('recapSettled');
+    if (el) el.textContent = (parseInt(el.textContent) + 1);
+    showToast('Payment marked as settled.');
+  }
+
+  let walletTotal = 180, walletSpent = 95;
+  function contributeWallet() {
+    walletTotal += 20;
+    document.getElementById('walletTotal').textContent = '$' + walletTotal;
+    showToast('Added $20 to the group pot.');
+  }
+
+  /* ============================================================
+     GROUP-AWARE DISRUPTION HANDLING
+     ============================================================ */
+  function simulateGroupDelay() {
+    document.getElementById('groupDisruptBanner').classList.remove('hidden');
+    document.getElementById('subgroupList').innerHTML = `
+      <div class="subgroup-card">
+        <div class="sg-top"><strong>You + Camille — arriving on the delayed flight</strong><span class="sg-impact high">High impact</span></div>
+        <p style="font-size:13.5px;color:var(--text-muted);">Your Day 1 dinner reservation now overlaps with arrival. Choose how to adjust.</p>
+        <div class="sg-opt-row">
+          <button onclick="chooseOption(this)">Push dinner to 9:30 PM</button>
+          <button onclick="chooseOption(this)">Cancel, eat at hotel</button>
+        </div>
+      </div>
+      <div class="subgroup-card">
+        <div class="sg-top"><strong>Rafael + Aiko — already on the ground</strong><span class="sg-impact low">Low impact</span></div>
+        <p style="font-size:13.5px;color:var(--text-muted);">Their plans are unaffected — no action needed, they can keep the original schedule.</p>
+        <div class="sg-opt-row">
+          <button onclick="chooseOption(this)" class="chosen">Keep original plan</button>
+        </div>
+      </div>`;
+    showToast('Disruption applied — each subgroup notified separately.');
+  }
+  function chooseOption(btn) {
+    btn.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('chosen'));
+    btn.classList.add('chosen');
+    showToast('Choice saved for that subgroup.');
+  }
+
+  /* ============================================================
+     TOAST + INIT
+     ============================================================ */
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show-toast');
+    setTimeout(() => toast.classList.remove('show-toast'), 2600);
+  }
+
+  renderMembers();
+  renderSwipeStage();
+  renderPoll();
+  renderExpenses();
+</script>
+</body>
+</html>
