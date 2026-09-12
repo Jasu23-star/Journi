@@ -4,23 +4,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Journi | Smart Route Builder</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="planner-pages.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
 
-<nav class="navbar">
-  <a class="brand" href="index.html#home"><img src="images/logo.png" alt="Journi logo" class="brand-logo-img"></a>
-  <div class="nav-links">
-    <a href="index.html#home">Home</a>
-    <a href="index.html#destinations">Destinations</a>
-    <a href="index.html#planner">Plan a Trip</a>
-    <a href="ai-planner.html">AI Planner</a>
-    <a class="active" href="route-builder.html">Route Builder</a>
-    <a href="group-planning.html">Plan With Friends</a>
-    <a href="index.html#reviews">Reviews</a>
-  </div>
-</nav>
+<header class="navbar">
+  <a class="brand" href="index.html#home"><img src="images/journi-logo.png" alt="Journi logo" class="brand-logo-img"></a>
+  <nav class="nav-links">
+      <a href="index.html#home" onclick="window.scrollTo({top:0,behavior:'smooth'});">Home</a>
+      <a href="index.html#destinations">Destination</a>
+      <a href="ai-planner.html">Ai Planner</a>
+      <a class="active" href="route-builder.html">Route Builder</a>
+      <a href="group-planning.html">Plan with Friends</a>
+      <a href="diy-trip.html">DIY Trip</a>
+      <a href="index.html#reviews">Reviews</a>
+      <a href="my-plan.html">My Plan</a>
+    </nav>
+</header>
 
 <main>
   <section class="section route-hero">
@@ -392,5 +393,6 @@ async function renderWeather() {
   }
 }
 </script>
+<button class="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
 </body>
 </html>
